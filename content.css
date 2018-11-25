@@ -1,0 +1,6 @@
+.log_reader_hint {
+    position: absolute;
+    display: none;
+    background:#ccc;
+    border: 1px solid;
+}
