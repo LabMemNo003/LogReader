@@ -4,8 +4,7 @@
     "version": "1.0.1",
     "description": "Log Reader",
     "permissions": [
-        "http://*/*",
-        "https://*/*",
+        "activeTab",
         "storage",
         "tabs"
     ],
