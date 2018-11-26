@@ -229,6 +229,7 @@ function triggerHighlightText() {
                 if (rule.isRegExp) {
                     let flag = "";
                     if (!rule.isCensitive) flag += "i";
+                    if (rule.isMultiline) flag += "m";
                     targPattern = new RegExp(rule.pattern, flag);
                 }
                 highlightText(targPattern, rule.color, rule.hint, rule.link);

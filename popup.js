@@ -4,6 +4,7 @@ let inputHint = document.getElementById("hint");
 let inputLink = document.getElementById("link");
 let checkboxRegExp = document.getElementById("regExp");
 let checkboxCensitive = document.getElementById("censitive");
+let checkboxMultiline = document.getElementById("multiline");
 let buttonAdd = document.getElementById("add");
 let buttonTrigger = document.getElementById("trigger");
 let buttonClean = document.getElementById("clean");
@@ -15,7 +16,8 @@ chrome.storage.local.get(
         hint: "",
         link: "",
         isRegExp: false,
-        isCensitive: false
+        isCensitive: false,
+        isMultiline: false,
     },
     result => {
         inputPattern.value = result.pattern;
@@ -24,6 +26,7 @@ chrome.storage.local.get(
         inputLink.value = result.link;
         checkboxRegExp.checked = result.isRegExp;
         checkboxCensitive.checked = result.isCensitive;
+        checkboxMultiline.checked = result.isMultiline;
     }
 );
 
@@ -51,6 +54,10 @@ checkboxCensitive.onchange = () => {
     chrome.storage.local.set({ isCensitive: checkboxCensitive.checked });
 };
 
+checkboxMultiline.onchange = () => {
+    chrome.storage.local.set({ isMultiline: checkboxMultiline.checked });
+}
+
 buttonAdd.onclick = () => {
     chrome.storage.local.get(
         { rules: [] },
@@ -62,7 +69,8 @@ buttonAdd.onclick = () => {
                     hint: inputHint.value,
                     link: inputLink.value,
                     isRegExp: checkboxRegExp.checked,
-                    isCensitive: checkboxCensitive.checked
+                    isCensitive: checkboxCensitive.checked,
+                    isMultiline: checkboxMultiline.checked,
                 }
             );
             chrome.storage.local.set({ rules: result.rules });
@@ -81,6 +89,7 @@ buttonClean.onclick = () => {
     inputLink.value = "";
     checkboxRegExp.checked = false;
     checkboxCensitive.checked = false;
+    checkboxMultiline.checked = false;
 
     chrome.storage.local.set(
         {
@@ -89,7 +98,8 @@ buttonClean.onclick = () => {
             hint: "",
             link: "",
             isRegExp: false,
-            isCensitive: false
+            isCensitive: false,
+            isMultiline: false,
         }
     );
 };
