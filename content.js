@@ -5,10 +5,36 @@ const LABEL = {
     classWhiteList: "log_reader_white_list",
 }
 
+// Union adjacent text nodes.
+// Reason: When open log with a browser, the log will be divided into several
+// text nodes in DOM, which will cause the count of matched text to be error.
 function unionTextNodes() {
+    if (unionTextNodes.done == true) return;
+    unionTextNodes.done = true;
 
+    let stack = [document];
+    while (stack.length) {
+        let node = stack.pop();
+
+        let child = node.lastChild;
+        while (child) {
+            stack.push(child);
+            child = child.previousSibling;
+        }
+
+        if (node instanceof Text &&
+            node.previousSibling instanceof Text) {
+            node.previousSibling.innerHTML += node.innerHTML;
+            node.remove();
+        }
+    }
 }
 
+// Match the text verbatimly, and wrap the matched text by span element.
+// targText: target pattern (String)
+// callback: do some processes with wrapped text (span element)
+// record: returned data used by callback function
+// rootNode: the root node to be searched in DOM
 function wrapPlainText(targText, callback = (curNode, record = {}) => { }, record = {}, rootNode = document) {
 
     let stack = [rootNode];
@@ -57,7 +83,11 @@ function wrapPlainText(targText, callback = (curNode, record = {}) => { }, recor
     return record;
 }
 
-// Do not use global match.
+// Match the text by regular expression, and wrap the matched text by span element.
+// targReObj: target pattern (Regular Expression Object)(Do not use global match)
+// callback: do some processes with wrapped text (span element)
+// record: returned data used by callback function
+// rootNode: the root node to be searched in DOM
 function wrapMatchedText(targReObj, callback = (curNode, record = {}) => { }, record = {}, rootNode = document) {
 
     let stack = [rootNode];
@@ -106,6 +136,8 @@ function wrapMatchedText(targReObj, callback = (curNode, record = {}) => { }, re
     return record;
 }
 
+// Wrap wrapPlainText() and wrapMatchedText(), and do some general processes.
+// Add 'count' in record to return the amount of matched pattern.
 function wrapText(targPattern, callback = (curNode, record = {}) => { }, record = {}, rootNode = document) {
     let wrapTextFunc;
     if (typeof targPattern == "string") { //Use typeof for "simple built-in types"
@@ -135,6 +167,11 @@ function wrapText(targPattern, callback = (curNode, record = {}) => { }, record 
     )
 }
 
+// Highlight the matched text with given color, also provide more infomation.
+// targPattern: a string or a regular expression object to be matched
+// color: the background color of matched text
+// hint: the message shows near cursor when hover on matched text
+// link: the hyperlink binds to matched text
 function highlightText(targPattern, color = "yellow", hint = undefined, link = undefined) {
     let hintFlag, hintElement;
     if (hint && hint.length) hintFlag = true;
@@ -180,7 +217,10 @@ function highlightText(targPattern, color = "yellow", hint = undefined, link = u
     );
 }
 
+// Read all rules from local storage, and apply them to highlight the text.
 function triggerHighlightText() {
+    unionTextNodes();
+
     chrome.storage.local.get(
         { rules: [] },
         result => {
@@ -189,6 +229,7 @@ function triggerHighlightText() {
                 if (rule.isRegExp) {
                     let flag = "";
                     if (!rule.isCensitive) flag += "i";
+                    if (rule.isMultiline) flag += "m";
                     targPattern = new RegExp(rule.pattern, flag);
                 }
                 highlightText(targPattern, rule.color, rule.hint, rule.link);
