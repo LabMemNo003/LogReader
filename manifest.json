@@ -8,16 +8,9 @@
         "storage",
         "tabs"
     ],
-    "commands": {
-        "trigger": {
-            "suggested_key": {
-                "default": "Ctrl+Shift+F"
-            },
-            "description": "trigger"
-        }
-    },
     "background": {
         "scripts": [
+            "worker_api/worker_proxy.js",
             "background.js"
         ],
         "persistent": false
@@ -25,10 +18,12 @@
     "content_scripts": [
         {
             "matches": [
-                "http://*/*",
-                "https://*/*"
+                "file://*/*"
             ],
             "js": [
+                "worker_api/worker_proxy.js",
+                "worker_api/worker_api.js",
+                "utility.js",
                 "content.js"
             ],
             "css": [
@@ -36,6 +31,9 @@
             ],
             "run_at": "document_end"
         }
+    ],
+    "web_accessible_resources": [
+        "worker_api/worker_proxy.html"
     ],
     "browser_action": {
         "default_popup": "popup.html",
