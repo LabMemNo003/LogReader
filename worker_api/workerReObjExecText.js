@@ -9,12 +9,7 @@ self.importScripts("worker_api.js");
 // result: An array of objects which contains the matched string and its index.
 self.onmessage = event => {
     let { reObj, text } = event.data;
-
-    let result = reObjExec(reObj,text);
-
-    self.postMessage(
-        {
-            result,
-        }
+    reObjExecText(reObj, text).then(
+        result => self.postMessage(result)
     );
 };

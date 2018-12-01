@@ -1,92 +1,106 @@
 // debugger;
 
-// let reObj = new RegExp("a", "ig");
+// let textNode = document.body.firstChild.firstChild;
+// let nextNode = textNode.nextSibling;
 // let wrapElem = document.createElement("span");
-// wrapElem.style.background = "green";
+// wrapElem.style.background = "yellow";
 
-// let sum = 0;
+// let start, end;
 
-// let stack = [document];
-// while (stack.length) {
-//     let node = stack.pop();
+// start = new Date();
+// Promise.all(getTextNodes(document).map(item => scheduleWrapMatchedTextInNode_g(/a/gi, item, wrapElem, [10000, Infinity, Infinity])))
+//     .then(result => console.log(result.reduce((pre, cur) => pre + cur, 0)))
+//     .then(_ => {
+//         end = new Date();
+//         console.log(start, end, end - start);
+//     })
+//     .then(_ => {
 
-//     let child = node.lastChild;
-//     while (child) {
-//         stack.push(child);
-//         child = child.previousSibling;
-//     }
-
-//     if (node instanceof Text) {
-//         let text = node.data;
-//         let mid = (text.length & 1 +text.length)/2;
-//         let foreText = text.substr(0,mid);
-//         let foreNode = document.createTextNode(foreText);
-//         let tailText = text.substr(mid);
-//         let tailNode = document.createTextNode(tailText);
-//         node.replaceWith(foreNode,tailNode);
-
-//         wrapMatchedText(
-//             reObj,
-//             foreNode,
-//             wrapElem,
-//             undefined,
-//             (count, more) => {
-//                 sum += count;
-//                 console.log(count, sum);
-//             }
-//         );
-
-//         wrapMatchedText(
-//             reObj,
-//             tailNode,
-//             wrapElem,
-//             undefined,
-//             (count, more) => {
-//                 sum += count;
-//                 console.log(count, sum);
-//             }
-//         );
-//     }
-// }
+//         wrapElem.style.background = "green";
+//         start = new Date();
+//         Promise.all(getTextNodes(document).map(item => scheduleWrapMatchedTextInNode_g(/e/gi, item, wrapElem, [10000, 10000, 10000])))
+//             .then(result => console.log(result.reduce((pre, cur) => pre + cur, 0)))
+//             .then(_ => {
+//                 end = new Date();
+//                 console.log(start, end, end - start);
+//             })
+//             .then(_ => {
 
 
+//                 wrapElem.style.background = "red";
+//                 start = new Date();
+//                 Promise.all(getTextNodes(document).map(item => scheduleWrapMatchedTextInNode_g(/i/gi, item, wrapElem, [10000, 10000, 10000])))
+//                     .then(result => console.log(result.reduce((pre, cur) => pre + cur, 0)))
+//                     .then(_ => {
+//                         end = new Date();
+//                         console.log(start, end, end - start);
+//                     })
+//                     .then(
 
+//                     );
 
+//             });
 
+//     });
 
 debugger;
 
 
-let wrapElem = document.createElement("span");
-
-getTextNodes(document)
-    .then(textNodes => {
-        wrapElem.style.background = "green";
-        return workerWrapMatchedTextInNodes(/a/gi, textNodes, wrapElem);
-    })
-    .then(value => {
-        console.log(JSON.stringify(value));
-        return true;
-    })
+new Promise((resolve, _) => resolve())
     .then(_ => {
-        return getTextNodes(document);
-    })
-    .then(textNodes => {
+        let start = new Date();
+        let textNodeArray = getTextNodes(document);
+        let textArray = textNodeArray.map(item => item.data);
+        let wrapElem = document.createElement("span");
         wrapElem.style.background = "yellow";
-        return workerWrapMatchedTextInNodes(/b/gi, textNodes, wrapElem);
-    })
-    .then(value => {
-        console.log(JSON.stringify(value));
-        return true;
+        return scheduleReObjExecTextArray(/a/gi, textArray)
+            .then(machesArray => {
+                return scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, machesArray)
+                    // return scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, machesArray, [30000, 30000, 30000])
+                    .then(_ => {
+                        let end = new Date();
+                        console.log(
+                            machesArray.map(item => item.length).reduce((pre, cur) => pre + cur, 0),
+                            end - start
+                        );
+                    });
+            });
     })
     .then(_ => {
-        return getTextNodes(document);
+        let start = new Date();
+        let textNodeArray = getTextNodes(document);
+        let textArray = textNodeArray.map(item => item.data);
+        let wrapElem = document.createElement("span");
+        wrapElem.style.background = "green";
+        return scheduleReObjExecTextArray(/e/gi, textArray)
+            .then(machesArray => {
+                return scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, machesArray)
+                    // return scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, machesArray, [30000, 30000, 30000])
+                    .then(_ => {
+                        let end = new Date();
+                        console.log(
+                            machesArray.map(item => item.length).reduce((pre, cur) => pre + cur, 0),
+                            end - start
+                        );
+                    });
+            });
     })
-    .then(textNodes => {
+    .then(_ => {
+        let start = new Date();
+        let textNodeArray = getTextNodes(document);
+        let textArray = textNodeArray.map(item => item.data);
+        let wrapElem = document.createElement("span");
         wrapElem.style.background = "red";
-        return workerWrapMatchedTextInNodes(/c/gi, textNodes, wrapElem);
-    })
-    .then(value => {
-        console.log(JSON.stringify(value));
-        return true;
+        return scheduleReObjExecTextArray(/i/gi, textArray)
+            .then(machesArray => {
+                return scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, machesArray)
+                    // return scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, machesArray, [30000, 30000, 30000])
+                    .then(_ => {
+                        let end = new Date();
+                        console.log(
+                            machesArray.map(item => item.length).reduce((pre, cur) => pre + cur, 0),
+                            end - start
+                        );
+                    });
+            });
     });

@@ -7,7 +7,7 @@ function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-async function getTextNodes(rootNode) {
+function getTextNodes(rootNode) {
     let textNodes = [];
 
     let stack = [rootNode];
@@ -27,4 +27,12 @@ async function getTextNodes(rootNode) {
     }
 
     return textNodes;
+}
+
+Array.prototype.sortIndices = function (cmp) {
+    return Array.from(
+        Array(this.length).keys()
+    ).sort((a,b)=>{
+        return cmp(this[a],this[b]);
+    });
 }

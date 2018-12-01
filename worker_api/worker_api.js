@@ -5,85 +5,221 @@
 // text: The string to be matched.
 // **Return values**
 // result: An array of objects which contains the matched string and its index.
-function reObjExec(reObj,text){
+async function reObjExecText(reObj, text) {
     let result = [];
     let match;
     while (match = reObj.exec(text)) {
         result.push(
             {
-                "string": match[0],
-                "index": match.index,
+                strlen: match[0].length,
+                index: match.index,
             }
         );
     }
     return result;
 }
 
-
-// **Caution**
-// Do add global flag to regular expression object.
-// **Parameters**
-// reObj: The regular expression object used to match (Do add global flag).
-// text: The string to be matched.
-// threshold: If text's length greater than threshold, start a new worker.
-// **Return values**
-// result: An array of objects which contains the matched string and its index.
-async function workerReObjExec(reObj, text, threshold = 2000) {
-    if(text.length<= threshold){
-        return reObjExec(reObj,text);
-    }
-
-    let worker = new Worker("workerReObjExec.js");
-    let promise = new Promise((resolve, _) => {
-        worker.postMessage(
-            {
-                reObj,
-                text,
-            }
-        );
+// Same to reObjExecText(), but delegate workload to new Worker()
+async function workerReObjExecText(reObj, text) {
+    return new Promise((resolve, _) => {
+        let worker = new Worker("workerReObjExecText.js");
+        worker.postMessage({ reObj, text });
         worker.onmessage = event => {
-            let { result } = event.data;
-            resolve(result);
+            resolve(event.data);
+            worker.terminate();
         };
     });
-    promise.then(_ => {
-        worker.terminate();
-    });
-    return promise;
 }
 
 // **Caution**
 // Do add global flag to regular expression object.
 // **Parameters**
 // reObj: The regular expression object used to match (Do add global flag).
-// xml: The XML typed string which contains the text to be matched and the template used to wrap the matched string.
-//      The worker uses id to get each data, so no matter what type the tag is.
-//      <tag id="list"> The result nodes </tag>
-//      <tag id="wrap"> The template used to wrap the matched string </tag>
-//      <tag id="text"> The text to be matched </tag>
-// **Retrun values**
-// xml: The XML typed string which contains the result nodes.
-//      The worker uses id to get each data, so no matter what type the tag is.
-//      <tag id="list"> The result nodes </tag>
-// count: The amount of matched strings.
-async function workerWrapMatchedText(reObj, xml) {
-    let worker = new Worker("workerWrapMatchedText.js");
-    let promise = new Promise((resolve, _) => {
-        worker.postMessage(
-            {
-                reObj,
-                xml,
-            }
-        );
+// text: The string to be matched.
+// threshold[0]: Determine whether to call workerReObjExecText()
+//               Default to call reObjExecText()
+// **Return values**
+// result: An array of objects which contains the matched string and its index.
+async function scheduleReObjExecText(reObj, text, threshold = [Infinity]) {
+    if (text.length > threshold[0]) {
+        return workerReObjExecText(reObj, text);
+    }
+    return reObjExecText(reObj, text);
+}
+
+// **Caution**
+// Do add global flag to regular expression object.
+// **Parameters**
+// reObj: The regular expression object used to match (Do add global flag).
+// textArray: An array contains the strings to be matched.
+// **Return values**
+// result: An array contains the results of reObjExecText()
+async function reObjExecTextArray(reObj, textArray) {
+    return Promise.all(textArray.map(item => reObjExecText(reObj, item)));
+}
+
+// Same to reObjExecTextArray(), but delegate workload to new Worker()
+async function workerReObjExecTextArray(reObj, textArray) {
+    return new Promise((resolve, _) => {
+        let worker = new Worker("workerReObjExecTextArray.js");
+        worker.postMessage({ reObj, textArray });
         worker.onmessage = event => {
-            let { xml, count } = event.data;
-            resolve({ xml, count });
+            resolve(event.data);
+            worker.terminate();
         };
     });
-    promise.then(_ => {
-        worker.terminate();
+}
+
+// **Caution**
+// Do add global flag to regular expression object.
+// **Parameters**
+// reObj: The regular expression object used to match (Do add global flag).
+// textArray: An array contains the strings to be matched.
+// threshold[0]: Determine whether to call workerReObjExecText()
+// threshold[1]: Determine wherter to call workerReObjExecTextArray()
+//               Default to call reObjExecTextArray()
+// **Return values**
+// result: An array contains the results of reObjExecText()
+async function scheduleReObjExecTextArray(reObj, textArray, threshold = [Infinity, Infinity]) {
+    let promises = [];
+    let results = [];
+
+    let textLength = textArray.map(item => item.length);
+    let hash = textLength.sortIndices((a, b) => a > b ? -1 : a < b ? 1 : 0);
+    let fore = 0;
+    let tail = hash.length - 1;
+
+    while (fore <= tail && textLength[hash[fore]] > threshold[0]) {
+        let index = fore;
+        promises.push(
+            workerReObjExecText(reObj, textArray[hash[index]])
+                .then(result => { results[hash[index]] = result; })
+        );
+        fore++;
+    }
+
+    let workload = 0, indices = [];
+    while (fore <= tail) {
+        workload = 0;
+        indices = [];
+        while (fore <= tail && workload + textLength[hash[fore]] <= threshold[1]) {
+            indices.push(fore);
+            workload += textLength[hash[fore]];
+            fore++;
+        }
+        while (fore <= tail && workload + textLength[hash[tail]] <= threshold[1]) {
+            indices.push(tail);
+            workload += textLength[hash[tail]];
+            tail--;
+        }
+        if (fore <= tail) {
+            indices.push(tail);
+            tail--;
+            promises.push(
+                workerReObjExecTextArray(reObj, indices.map(item => textArray[hash[item]]))
+                    .then(result => { result.forEach((item, index) => results[hash[indices[index]]] = item); })
+            );
+        }
+    }
+    if (indices.length > 0) {
+        promises.push(
+            reObjExecTextArray(reObj, indices.map(item => textArray[hash[item]]))
+                .then(result => { result.forEach((item, index) => results[hash[indices[index]]] = item); })
+        );
+    }
+
+    return Promise.all(promises).then(_ => results);
+}
+
+// **Parameters**
+// textNode: The node in which the text to be wrapped.
+// wrapElem: The element in which the matched string to be wrapped.
+// matches: An array contains the matched string's index and length.
+async function wrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches) {
+    let newNodes = [];
+    let text = textNode.data;
+    let lastIndex = 0;
+    for (let match of matches) {
+        if (lastIndex < match.index) {
+            let foreText = text.substring(lastIndex, match.index);
+            let foreNode = document.createTextNode(foreText);
+            newNodes.push(foreNode);
+        }
+
+        let targText = text.substr(match.index, match.strlen);
+        let targNode = document.createTextNode(targText);
+        let targElem = wrapElem.cloneNode(true);
+        targElem.appendChild(targNode);
+        newNodes.push(targElem);
+
+        lastIndex = match.index + match.strlen;
+    }
+
+    if (lastIndex < text.length) {
+        let lastText = text.substring(lastIndex);
+        let lastNode = document.createTextNode(lastText);
+        newNodes.push(lastNode);
+    }
+
+    textNode.replaceWith(...newNodes);
+}
+
+// Same to wrapMatchedTextInNodeWithMatches_g(), but delegate workload to new Worker() 
+async function workerWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches) {
+    return new Promise((resolve, _) => {
+        // xml: The XML typed string which contains the text to be matched and the template used to wrap the matched string.
+        //      The worker uses id to get each data, so no matter what type the tag is.
+        //      <tag id="list"> The result nodes </tag>
+        //      <tag id="wrap"> The template used to wrap the matched string </tag>
+        //      <tag id="text"> The text to be matched </tag>
+        // matches: An array contains the matched string's index and length.
+        // **Retrun values**
+        // xml: The XML typed string which contains the result nodes.
+        //      The worker uses id to get each data, so no matter what type the tag is.
+        //      <tag id="list"> The result nodes </tag>
+        let textElem = document.createElement("span");
+        textElem.id = "text";
+        textElem.innerText = textNode.data;
+
+        wrapElem.id = "wrap";
+
+        let listElem = document.createElement("span");
+        listElem.id = "list";
+
+        let rootElem = document.createElement("span");
+        rootElem.appendChild(textElem);
+        rootElem.appendChild(wrapElem);
+        rootElem.appendChild(listElem);
+
+        let serializer = new XMLSerializer();
+        let xml = serializer.serializeToString(rootElem);
+        xml = xml.replace(/<br \/>/g, "\n");
+
+        let worker = new Worker("workerWrapMatchedTextInNodeWithMatches.js");
+        worker.postMessage({ xml, matches });
+        worker.onmessage = event => {
+            let xml = event.data;
+            let parser = new DOMParser();
+            let domDoc = parser.parseFromString(xml, "text/html");
+            let listElem = domDoc.getElementById("list");
+            textNode.replaceWith(...listElem.childNodes);
+            resolve();
+            worker.terminate();
+        };
     });
-    return promise;
+}
+
+// **Parameters**
+// textNode: The node in which the text to be wrapped.
+// wrapElem: The element in which the matched string to be wrapped.
+// matches: An array contains the matched string's index and length.
+// threshold[0]: Determine whether to call wrapMatchedTextInNodeWithMatches_g()
+//               Default to call workerWrapMatchedTextInNodeWithMatches_g()
+async function scheduleWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches, threshold = [Infinity]) {
+    if (textNode.data.length + wrapElem.outerHTML * matches.length > threshold[0]) {
+        return workerWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches);
+    }
+    return wrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches);
 }
 
 // **Caution**
@@ -92,301 +228,205 @@ async function workerWrapMatchedText(reObj, xml) {
 // reObj: The regular expression object used to match (Do add global flag).
 // textNode: The node in which the text to be matched.
 // wrapElem: The element in which the matched string to be wrapped.
-// **Retrun values**
-// count: The amount of matched strings.
-// firstNode: The textNode will be replaced by an array of nodes, and this value is the first one.
-// lastNode: The textNode will be replaced by an array of nodes, and this value is the first one.
-async function workerWrapMatchedTextInNode(reObj, textNode, wrapElem) {
-    let textElem = document.createElement("span");
-    textElem.id = "text";
-    textElem.innerText = textNode.data;
+// threshold[0]: Determine whether to call workerReObjExecText()
+//               Default to call reObjExecText()
+// threshold[1]: Determine whether to call workerWrapMatchedTextInNodeWithMatches_g()
+//               Default to call wrapMatchedTextInNodeWithMatches_g()
+// **Return values**
+// result: The amount of matches.
+async function wrapMatchedTextInNode_g(reObj, textNode, wrapElem, threshold = [Infinity, Infinity]) {
+    let promise = scheduleReObjExecText(reObj, textNode.data, [threshold[0]]);
+    let matches = await promise;
+    await scheduleWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches, [threshold[1]]);
+    return matches.length;
+}
 
-    wrapElem.id = "wrap";
+// Same to wrapMatchedTextByDom_g(), but delegate workload to new Worker()
+async function workerWrapMatchedTextInNode_g(reObj, textNode, wrapElem, threshold = [Infinity, Infinity]) {
+    return new Promise((resolve, _) => {
+        // **Caution**
+        // Do add global flag to regular expression object.
+        // **Parameters**
+        // reObj: The regular expression object used to match (Do add global flag).
+        // xml: The XML typed string which contains the text to be matched and the template used to wrap the matched string.
+        //      The worker uses id to get each data, so no matter what type the tag is.
+        //      <tag id="list"> The result nodes </tag>
+        //      <tag id="wrap"> The template used to wrap the matched string </tag>
+        //      <tag id="text"> The text to be matched </tag>
+        // **Retrun values**
+        // xml: The XML typed string which contains the result nodes.
+        //      The worker uses id to get each data, so no matter what type the tag is.
+        //      <tag id="list"> The result nodes </tag>
+        let textElem = document.createElement("span");
+        textElem.id = "text";
+        textElem.innerText = textNode.data;
 
-    let listElem = document.createElement("span");
-    listElem.id = "list";
+        wrapElem.id = "wrap";
 
-    let rootElem = document.createElement("span");
-    rootElem.appendChild(textElem);
-    rootElem.appendChild(wrapElem);
-    rootElem.appendChild(listElem);
+        let listElem = document.createElement("span");
+        listElem.id = "list";
 
-    let serializer = new XMLSerializer();
-    let xml = serializer.serializeToString(rootElem);
-    xml = xml.replace(/<br \/>/g, "\n");
+        let rootElem = document.createElement("span");
+        rootElem.appendChild(textElem);
+        rootElem.appendChild(wrapElem);
+        rootElem.appendChild(listElem);
 
-    return workerWrapMatchedText(reObj, xml)
-        .then(({ xml, count }) => {
+        let serializer = new XMLSerializer();
+        let xml = serializer.serializeToString(rootElem);
+        xml = xml.replace(/<br \/>/g, "\n");
+
+        let worker = new Worker("workerWrapMatchedTextInNode.js");
+        worker.postMessage({ reObj, xml, threshold });
+        worker.onmessage = event => {
+            let { xml, count } = event.data;
             let parser = new DOMParser();
             let domDoc = parser.parseFromString(xml, "text/html");
             let listElem = domDoc.getElementById("list");
-            let firstNode = listElem.firstChild;
-            let lastNode = listElem.lastChild;
             textNode.replaceWith(...listElem.childNodes);
-            let result = { count, firstNode, lastNode, };
-            return result;
+            resolve(count);
+            worker.terminate();
+        };
+    });
+}
+
+// **Caution**
+// Do add global flag to regular expression object.
+// **Parameters**
+// reObj: The regular expression object used to match (Do add global flag).
+// textNode: The node in which the text to be matched.
+// wrapElem: The element in which the matched string to be wrapped.
+// threshold[0]: Determine whether to call workerReObjExecText()
+//               Default to call reObjExecText()
+// threshold[1]: Determine whether to call workerWrapMatchedTextInNodeWithMatches_g()
+//               Default to call wrapMatchedTextInNodeWithMatches_g()
+// threshold[2]: Determine whether to call workerWrapMatchedTextInNode_g()
+//               Default to call wrapMatchedTextInNode_g()
+// **Return values**
+// result: The amount of matches.
+async function scheduleWrapMatchedTextInNode_g(reObj, textNode, wrapElem, threshold = [Infinity, Infinity, Infinity]) {
+    if (textNode.data.length > threshold[2]) {
+        return workerWrapMatchedTextInNode_g(reObj, textNode, wrapElem, [threshold[0], threshold[1]]);
+    }
+    return wrapMatchedTextInNode_g(reObj, textNode, wrapElem, [threshold[0], threshold[1]]);
+}
+
+// textNodeArray: An array of nodes in which the text to be wrapped.
+// wrapElem: The element in which the matched string to be wrapped.
+// matchesArray: An array of matches results to corresponding nodes in textNodeArray.
+// threshold[0]: Determine whether to call workerwrapMatchedTextInNodeWithMatches_g()
+//               Default to call wrapMatchedTextInNodeWithMatches_g()
+async function wrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, matchesArray, threshold = [Infinity]) {
+    await Promise.all(
+        textNodeArray.map((textNode, index) =>
+            scheduleWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matchesArray[index], threshold)
+        )
+    );
+}
+
+// Same to wrapMatchedTextInNodesWithMatches_g,  but delegate workload to new Worker()
+async function workerWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, matchesArray, threshold = [Infinity]) {
+    return new Promise((solve, _) => {
+        let textElem = document.createElement("span");
+        textElem.id = "text";
+        wrapElem.id = "wrap";
+        let listElem = document.createElement("span");
+        listElem.id = "list";
+        let rootElem = document.createElement("span");
+        rootElem.appendChild(textElem);
+        rootElem.appendChild(wrapElem);
+        rootElem.appendChild(listElem);
+        let serializer = new XMLSerializer();
+
+        let xmls = textNodeArray.map(textNode => {
+            textElem.innerText = textNode.data;
+            let xml = serializer.serializeToString(rootElem);
+            return xml.replace(/<br \/>/g, "\n");
         });
-}
 
-/* 
-function workerWrapMatchedTextInNodes(reObj, textNodes, wrapElem, limit = [30, 15], timeout = [59, 29, 23, 19], length = 100) {
-    let countWorkers = 0;
-    let targWorkers = textNodes.length * 2 - 1;
-
-    let countMatches = 0;
-
-    let firstNodes = [];
-    let lastNodes = [];
-
-    for (let index = 0; index < textNodes.length; index++) {
-        let textNode = textNodes[index];
-        let interval = setInterval(() => {
-            console.log("0");
-            if (limit[0] > 0) {
-                limit[0]--;
-                clearInterval(interval);
-
-                workerWrapMatchedTextInNode(reObj, textNode, wrapElem)
-                    .then(value => {
-                        let { count, firstNode, lastNode } = value;
-                        countMatches += count;
-                        firstNodes[index] = firstNode;
-                        lastNodes[index] = lastNode;
-
-                        limit[0]++;
-                        countWorkers++;
-                    });
-            }
-        }, timeout[0]);
-    }
-
-    for (let index = 1; index < textNodes.length; index++) {
-        let outterInterval = setInterval(() => {
-            console.log("1");
-            if (lastNodes[index - 1] && firstNodes[index]) {
-                clearInterval(outterInterval);
-
-                if (lastNodes[index - 1].nextSibling === firstNodes[index]) {
-
-                    if (lastNodes[index - 1].data &&
-                        lastNodes[index - 1].data.length > length) {
-                        let text = lastNodes[index - 1].data;
-
-                        let preForeText = text.substring(0, text.length - length);
-                        let preForeNode = document.createTextNode(preForeText);
-
-                        let preLastText = text.substring(text.length - length);
-                        let preLastNode = document.createTextNode(preLastText);
-
-                        if (firstNodes[index - 1] === lastNodes[index - 1]) {
-                            firstNodes[index - 1] = preForeNode;
-                        }
-                        lastNodes[index - 1].replaceWith(preLastNode);
-                        lastNodes[index - 1] = preLastNode;
-                        lastNodes[index - 1].before(preForeNode);
-                    }
-
-                    if (firstNodes[index].data &&
-                        firstNodes[index].data.length > length) {
-                        let text = firstNodes[index].data;
-
-                        let curFirstText = text.substring(0, length);
-                        let curFirstNode = document.createTextNode(curFirstText);
-
-                        let curNextText = text.substring(length);
-                        let curNextNode = document.createTextNode(curNextText);
-
-                        if (firstNodes[index] === lastNodes[index]) {
-                            lastNodes[index] = curNextNode;
-                        }
-                        firstNodes[index].replaceWith(curFirstNode);
-                        firstNodes[index] = curFirstNode;
-                        firstNodes[index].after(curNextNode);
-                    }
-
-                    let text = "";
-                    if (lastNodes[index - 1].data) text += lastNodes[index - 1].data;
-                    if (firstNodes[index].data) text += firstNodes[index].data;
-                    let textNode = document.createTextNode(text);
-
-                    firstNodes[index].replaceWith(textNode);
-                    firstNodes[index] = textNode;
-                    lastNodes[index - 1] = textNode;
-
-                    let innerInterval = setInterval(() => {
-                        console.log("2");
-                        if (limit[1] > 0) {
-                            limit[1]--;
-                            clearInterval(innerInterval);
-
-                            workerWrapMatchedTextInNode(reObj, textNode, wrapElem)
-                                .then(value => {
-                                    let { count, firstNode, lastNode } = value;
-                                    countMatches += count;
-
-                                    limit[1]++;
-                                    countWorkers++;
-                                });
-                        }
-                    }, timeout[2]);
-                }
-                else {
-                    targWorkers--;
-                }
-            }
-        }, timeout[1]);
-    }
-
-    return new Promise((resolve, _) => {
-        let interval = setInterval(() => {
-            console.log("3");
-            if (countWorkers == targWorkers) {
-                clearInterval(interval);
-                resolve(
-                    {
-                        countWorkers,
-                        countMatches,
-                    }
-                );
-            }
-        }, timeout[3]);
+        let worker = new Worker("workerWrapMatchedTextInNodesWithMatches.js");
+        worker.postMessage({ xmls, matchesArray, threshold });
+        worker.onmessage = event => {
+            let parser = new DOMParser();
+            event.data.forEach((xml, index) => {
+                let domDoc = parser.parseFromString(xml, "text/html");
+                let listElem = domDoc.getElementById("list");
+                textNodeArray[index].replaceWith(...listElem.childNodes);
+            });
+            solve();
+            worker.terminate();
+        };
     });
 }
- */
 
+// textNodeArray: An array of nodes in which the text to be wrapped.
+// wrapElem: The element in which the matched string to be wrapped.
+// matchesArray: An array of matches results to corresponding nodes in textNodeArray.
+// threshold[0]: Determine whether to call workerWrapMatchedTextInNodeWithMatches_g()
+//               Default to call wrapMatchedTextInNodeWithMatches_g()
+// threshold[1]: Determine whether to call scheduleWrapMatchedTextInNodeWithMatches_g()
+// threshold[2]: Determine whether to call workerWrapMatchedTextInNodesWithMatches_g()
+//               Default to call wrapMatchedTextInNodesWithMatches_g()
+async function scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, matchesArray, threshold = [Infinity, Infinity, Infinity]) {
+    let promises = [];
 
-function workerWrapMatchedTextInNodes(reObj, textNodes, wrapElem, limit = [30, 15], timeout = [59, 29, 23, 19], length = 100) {
-    let countWorkers = 0;
-    let targWorkers = textNodes.length * 2 - 1;
+    let textLength = textNodeArray.map(item => item.data.length);
+    let hash = textLength.sortIndices((a, b) => a > b ? -1 : a < b ? 1 : 0);
+    let fore = 0;
+    let tail = hash.length - 1;
 
-    let countMatches = 0;
-
-    let firstNodes = [];
-    let lastNodes = [];
-
-    for (let index = 0; index < textNodes.length; index++) {
-        let textNode = textNodes[index];
-        (function foo() {
-            de&&bug("0","wait");
-            if (limit[0] > 0) {
-                de&&bug("0","pass");
-                limit[0]--;
-                workerWrapMatchedTextInNode(reObj, textNode, wrapElem)
-                    .then(value => {
-                        let { count, firstNode, lastNode } = value;
-                        // de&&bug("0",count);
-                        countMatches += count;
-                        firstNodes[index] = firstNode;
-                        lastNodes[index] = lastNode;
-
-                        limit[0]++;
-                        countWorkers++;
-                    });
-            }
-            else {
-                setTimeout(foo, timeout[0]+getRndInteger(-5,5));
-            }
-        })();
+    while (fore <= tail && textLength[hash[fore]] > threshold[1]) {
+        let index = fore;
+        promises.push(
+            scheduleWrapMatchedTextInNodeWithMatches_g(textNodeArray[hash[index]], wrapElem, matchesArray[hash[index]], [threshold[0]])
+        );
+        fore++;
     }
 
-    for (let index = 1; index < textNodes.length; index++) {
-        (function outterFoo() {
-            de&&bug("1","wait");
-            if (lastNodes[index - 1] && firstNodes[index]) {
-                de&&bug("1","pass");
-
-                if (lastNodes[index - 1].nextSibling === firstNodes[index]) {
-
-                    if (lastNodes[index - 1].data &&
-                        lastNodes[index - 1].data.length > length) {
-                        let text = lastNodes[index - 1].data;
-
-                        let preForeText = text.substring(0, text.length - length);
-                        let preForeNode = document.createTextNode(preForeText);
-
-                        let preLastText = text.substring(text.length - length);
-                        let preLastNode = document.createTextNode(preLastText);
-
-                        if (firstNodes[index - 1] === lastNodes[index - 1]) {
-                            firstNodes[index - 1] = preForeNode;
-                        }
-                        lastNodes[index - 1].replaceWith(preLastNode);
-                        lastNodes[index - 1] = preLastNode;
-                        lastNodes[index - 1].before(preForeNode);
-                    }
-
-                    if (firstNodes[index].data &&
-                        firstNodes[index].data.length > length) {
-                        let text = firstNodes[index].data;
-
-                        let curFirstText = text.substring(0, length);
-                        let curFirstNode = document.createTextNode(curFirstText);
-
-                        let curNextText = text.substring(length);
-                        let curNextNode = document.createTextNode(curNextText);
-
-                        if (firstNodes[index] === lastNodes[index]) {
-                            lastNodes[index] = curNextNode;
-                        }
-                        firstNodes[index].replaceWith(curFirstNode);
-                        firstNodes[index] = curFirstNode;
-                        firstNodes[index].after(curNextNode);
-                    }
-
-                    let text = "";
-                    if (lastNodes[index - 1].data) text += lastNodes[index - 1].data;
-                    if (firstNodes[index].data) text += firstNodes[index].data;
-                    let textNode = document.createTextNode(text);
-
-                    firstNodes[index].replaceWith(textNode);
-                    firstNodes[index] = textNode;
-                    lastNodes[index - 1] = textNode;
-
-                    (function innerFoo() {
-                        de&&bug("2","wait");
-                        if (limit[1] > 0) {
-                            de&&bug("2","pass");
-                            limit[1]--;
-                            workerWrapMatchedTextInNode(reObj, textNode, wrapElem)
-                                .then(value => {
-                                    let { count, firstNode, lastNode } = value;
-                                    // de&&bug("2",count);
-                                    countMatches += count;
-
-                                    limit[1]++;
-                                    countWorkers++;
-                                });
-                        }
-                        else {
-                            setTimeout(innerFoo, timeout[2]+getRndInteger(-5,5));
-                        }
-                    })();
-                }
-                else {
-                    targWorkers--;
-                }
-            }
-            else {
-                setTimeout(outterFoo, timeout[1]+getRndInteger(-5,5));
-            }
-        })();
+    let workload = 0, indices = [];
+    while (fore <= tail) {
+        workload = 0;
+        indices = [];
+        while (fore <= tail && workload + textLength[hash[fore]] <= threshold[2]) {
+            indices.push(fore);
+            workload += textLength[hash[fore]];
+            fore++;
+        }
+        while (fore <= tail && workload + textLength[hash[tail]] <= threshold[2]) {
+            indices.push(tail);
+            workload += textLength[hash[tail]];
+            tail--;
+        }
+        if (fore <= tail) {
+            indices.push(tail);
+            tail--;
+            promises.push(
+                workerWrapMatchedTextInNodesWithMatches_g(indices.map(item => textNodeArray[hash[item]]), wrapElem, indices.map(item => matchesArray[hash[item]]), [threshold[0]])
+            );
+        }
+    }
+    if (indices.length > 0) {
+        promises.push(
+            wrapMatchedTextInNodesWithMatches_g(indices.map(item => textNodeArray[hash[item]]), wrapElem, indices.map(item => matchesArray[hash[item]]), [threshold[0]])
+        );
     }
 
-    return new Promise((resolve, _) => {
-        (function foo() {
-            de&&bug("3","wait");
-            if (countWorkers == targWorkers) {
-                de&&bug("3","pass");
-                resolve(
-                    {
-                        countWorkers,
-                        countMatches,
-                    }
-                );
-            }
-            else {
-                setTimeout(foo, timeout[3]+getRndInteger(-5,5));
-            }
-        })();
-    });
+    await Promise.all(promises);
+}
+
+// **Caution**
+// Do add global flag to regular expression object.
+// **Parameters**
+// reObj: The regular expression object used to match (Do add global flag).
+// textArray: An array contains the strings to be matched.
+// threshold[0]: Determine whether to call workerReObjExecText()
+// threshold[1]: Determine whether to call workerReObjExecTextArray()
+//               Default to call reObjExecTextArray()
+// **Return values**
+// result: An array contains the results of reObjExecText()
+async function wrapMatchedTextInNodes_g(reObj, textNodeArray, wrapElem, threshold = [Infinity, Infinity]) {
+    let textArray = textNodeArray.map(item => item.data);
+    let promise = scheduleReObjExecTextArray(reObj, textArray, [threshold[0], threshold[1]]);
+    let matchesArray = await promise;
+
+
 }
