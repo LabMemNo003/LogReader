@@ -1,239 +1,141 @@
-const LABEL = {
-    classText: "log_reader_text",
-    classHint: "log_reader_hint",
-    classLink: "log_reader_link",
-    classWhiteList: "log_reader_white_list",
-}
-
-// Union adjacent text nodes.
-// Reason: When open log with a browser, the log will be divided into several
-// text nodes in DOM, which will cause the count of matched text to be error.
-function unionTextNodes() {
-    if (unionTextNodes.done == true) return;
-    unionTextNodes.done = true;
-
-    let stack = [document];
-    while (stack.length) {
-        let node = stack.pop();
-
-        let child = node.lastChild;
-        while (child) {
-            stack.push(child);
-            child = child.previousSibling;
-        }
-
-        if (node instanceof Text &&
-            node.previousSibling instanceof Text) {
-            node.previousSibling.innerHTML += node.innerHTML;
-            node.remove();
-        }
-    }
-}
-
-// Match the text verbatimly, and wrap the matched text by span element.
-// targText: target pattern (String)
-// callback: do some processes with wrapped text (span element)
-// record: returned data used by callback function
-// rootNode: the root node to be searched in DOM
-function wrapPlainText(targText, callback = (curNode, record = {}) => { }, record = {}, rootNode = document) {
-
-    let stack = [rootNode];
-    while (stack.length) {
-        let node = stack.pop();
-
-        if (node instanceof Element &&
-            node.classList.contains(LABEL.classWhiteList)) {
-            continue;
-        }
-
-        let child = node.lastChild;
-        while (child) {
-            stack.push(child);
-            child = child.previousSibling;
-        }
-
-        if (node instanceof Text) {
-            while (true) {
-                let text = node.data;
-
-                let index = text.indexOf(targText);
-                if (index == -1) {
-                    break;
+// **Parameters**
+// reObj: The regular expression object used to match (Do add global flag).
+// text: The string to be matched.
+// **Return values**
+// matches: An array of objects which contains the matched string's length and index.
+async function reObjExecText(reObj, text) {
+    return new Promise((resolve, _) => {
+        let matches = [];
+        let match;
+        while (match = reObj.exec(text)) {
+            matches.push(
+                {
+                    length: match[0].length,
+                    index: match.index,
                 }
+            );
+        }
+        resolve(matches);
+    });
+}
 
-                let foreText = text.substr(0, index);
+// **Parameters**
+// reObj: The regular expression object used to match (Do add global flag).
+// textArray: An array contains the strings to be matched.
+// **Return values**
+// matchesArray: An array contains the results of reObjExecText()
+async function reObjExecTextArray(reObj, textArray) {
+    return Promise.all(textArray.map(item => {
+        return reObjExecText(reObj, item);
+    }));
+}
+
+// **Parameters**
+// textNode: The text node in which the text to be wrapped.
+// wrapElem: The element in which the matched string to be wrapped.
+// matches: An array contains the matched string's index and length.
+// **Return values**
+// count: The amount of matches.
+async function wrapMatchedTextInNodeWithMatches(textNode, wrapElem, matches) {
+    return new Promise((resolve, _) => {
+        let newNodes = [];
+        let text = textNode.data;
+        let lastIndex = 0;
+        for (let match of matches) {
+            if (lastIndex < match.index) {
+                let foreText = text.substring(lastIndex, match.index);
                 let foreNode = document.createTextNode(foreText);
-
-                let targNode = document.createElement("span");
-                targNode.classList.add(LABEL.classWhiteList);
-                targNode.classList.add(LABEL.classText);
-                targNode.innerHTML = targText;
-                callback(targNode, record);
-
-                let tailText = text.substr(index + targText.length);
-                let tailNode = document.createTextNode(tailText);
-
-                node.replaceWith(tailNode);
-                node = tailNode;
-                node.before(foreText);
-                node.before(targNode);
+                newNodes.push(foreNode);
             }
+
+            let targText = text.substr(match.index, match.length);
+            let targNode = document.createTextNode(targText);
+            let targElem = wrapElem.cloneNode(true);
+            targElem.appendChild(targNode);
+            newNodes.push(targElem);
+
+            lastIndex = match.index + match.length;
         }
-    }
-    return record;
+        if (lastIndex < text.length) {
+            let lastText = text.substring(lastIndex);
+            let lastNode = document.createTextNode(lastText);
+            newNodes.push(lastNode);
+        }
+        textNode.replaceWith(...newNodes);
+        resolve(matches.length);
+    });
 }
 
-// Match the text by regular expression, and wrap the matched text by span element.
-// targReObj: target pattern (Regular Expression Object)(Do not use global match)
-// callback: do some processes with wrapped text (span element)
-// record: returned data used by callback function
-// rootNode: the root node to be searched in DOM
-function wrapMatchedText(targReObj, callback = (curNode, record = {}) => { }, record = {}, rootNode = document) {
-
-    let stack = [rootNode];
-    while (stack.length) {
-        let node = stack.pop();
-
-        if (node instanceof Element &&
-            node.classList.contains(LABEL.classWhiteList)) {
-            continue;
-        }
-
-        let child = node.lastChild;
-        while (child) {
-            stack.push(child);
-            child = child.previousSibling;
-        }
-
-        if (node instanceof Text) {
-            while (true) {
-                let text = node.data;
-
-                let match = targReObj.exec(text);
-                if (match == null) {
-                    break;
-                }
-
-                let foreText = text.substr(0, match.index);
-                let foreNode = document.createTextNode(foreText);
-
-                let targNode = document.createElement("span");
-                targNode.classList.add(LABEL.classWhiteList);
-                targNode.classList.add(LABEL.classText);
-                targNode.innerHTML = match[0];
-                callback(targNode, record);
-
-                let tailText = text.substr(match.index + match[0].length);
-                let tailNode = document.createTextNode(tailText);
-
-                node.replaceWith(tailNode);
-                node = tailNode;
-                node.before(foreText);
-                node.before(targNode);
-            }
-        }
-    }
-    return record;
+// **Parameters**
+// textNodeArray: An array of nodes in which the text to be wrapped.
+// wrapElem: The element in which the matched string to be wrapped.
+// matchesArray: An array of matches results to corresponding nodes in textNodeArray.
+// **Return values**
+// countArray: An array of the amount of matches.
+async function wrapMatchedTextInNodesWithMatches(textNodeArray, wrapElem, matchesArray) {
+    return Promise.all(textNodeArray.map((textNode, index) => {
+        return wrapMatchedTextInNodeWithMatches(textNode, wrapElem, matchesArray[index]);
+    }));
 }
 
-// Wrap wrapPlainText() and wrapMatchedText(), and do some general processes.
-// Add 'count' in record to return the amount of matched pattern.
-function wrapText(targPattern, callback = (curNode, record = {}) => { }, record = {}, rootNode = document) {
-    let wrapTextFunc;
-    if (typeof targPattern == "string") { //Use typeof for "simple built-in types"
-        wrapTextFunc = wrapPlainText;
-    }
-    else if (targPattern instanceof RegExp) { //Use instanceof for "custom types" or "complex built-in types"
-        wrapTextFunc = wrapMatchedText;
-    }
-    else {
-        console.log("Error: targPattern should be String or RegExp.");
-    }
-
-    return wrapTextFunc(
-        targPattern,
-        (curNode, record) => {
-            callback(curNode, record);
-
-            record.count++;
-        },
-        Object.assign(
-            record,
-            {
-                count: 0,
-            }
-        ),
-        rootNode
-    )
+// **Parameters**
+// reObj: The regular expression object used to match (Do add global flag).
+// textNode: The node in which the text to be matched.
+// wrapElem: The element in which the matched string to be wrapped.
+// **Return values**
+// count: The amount of matches.
+async function wrapMatchedTextInNode(reObj, textNode, wrapElem) {
+    let text = textNode.data;
+    return reObjExecText(reObj, text)
+        .then(matches => {
+            return wrapMatchedTextInNodeWithMatches(textNode, wrapElem, matches);
+        });
 }
 
-// Highlight the matched text with given color, also provide more infomation.
-// targPattern: a string or a regular expression object to be matched
-// color: the background color of matched text
-// hint: the message shows near cursor when hover on matched text
-// link: the hyperlink binds to matched text
-function highlightText(targPattern, color = "yellow", hint = undefined, link = undefined) {
-    let hintFlag, hintElement;
-    if (hint && hint.length) hintFlag = true;
+// **Parameters**
+// reObj: The regular expression object used to match (Do add global flag).
+// textArray: An array contains the strings to be matched.
+// **Return values**
+// countArray: An array of the amount of matches.
+async function wrapMatchedTextInNodes(reObj, textNodeArray, wrapElem) {
+    return Promise.all(textNodeArray.map(textNode => {
+        return wrapMatchedTextInNode(reObj, textNode, wrapElem);
+    }));
+}
+async function wrapMatchedTextInNodes_(reObj, textNodeArray, wrapElem) {
+    let textArray = textNodeArray.map(textNode => textNode.data);
+    return reObjExecTextArray(reObj, textArray)
+        .then(matchesArray => {
+            return wrapMatchedTextInNodesWithMatches(textNodeArray, wrapElem, matchesArray);
+        });
+}
 
-    let linkFlag, linkElement;
-    if (link && link.length) linkFlag = true;
+debugger;
 
-    if (hintFlag) {
-        hintElement = document.createElement("div");
-        hintElement.classList.add(LABEL.classWhiteList);
-        hintElement.classList.add(LABEL.classHint);
-        hintElement.innerHTML = hint;
-        document.body.append(hintElement);
+let reObj = /a/gi;
+
+let textNodeArray = [];
+let stack = [document];
+while (stack.length) {
+    let node = stack.pop();
+
+    if (node instanceof Text) {
+        textNodeArray.push(node);
+        continue;
     }
 
-    return wrapText(
-        targPattern,
-        (curNode, record) => {
-            curNode.style.background = color;
-
-            if (hintFlag) {
-                curNode.onmouseover = event => {
-                    hintElement.style.left = event.pageX + 1 + "px";
-                    hintElement.style.top = event.pageY + 1 + "px";
-                    hintElement.style.display = "block";
-                }
-                curNode.onmouseout = () => {
-                    hintElement.style.display = "none";
-                }
-            }
-
-            if (linkFlag) {
-                linkElement = document.createElement("a");
-                linkElement.classList.add(LABEL.classWhiteList);
-                linkElement.classList.add(LABEL.classLink);
-                linkElement.href = link;
-                linkElement.innerHTML = curNode.innerHTML;
-
-                curNode.innerHTML = "";
-                curNode.append(linkElement);
-            }
-        }
-    );
+    let child = node.lastChild;
+    while (child) {
+        stack.push(child);
+        child = child.previousSibling;
+    }
 }
 
-// Read all rules from local storage, and apply them to highlight the text.
-function triggerHighlightText() {
-    unionTextNodes();
+let wrapElem = document.createElement("spam");
+wrapElem.style.background = "green";
 
-    chrome.storage.local.get(
-        { rules: [] },
-        result => {
-            for (let rule of result.rules) {
-                let targPattern = rule.pattern;
-                if (rule.isRegExp) {
-                    let flag = "";
-                    if (!rule.isCensitive) flag += "i";
-                    if (rule.isMultiline) flag += "m";
-                    targPattern = new RegExp(rule.pattern, flag);
-                }
-                highlightText(targPattern, rule.color, rule.hint, rule.link);
-            }
-        }
-    )
-}
+wrapMatchedTextInNodes(reObj, textNodeArray, wrapElem)
+    .then(countArray => {
+        let count = countArray.reduce((pre, cur) => pre + cur, 0);
+        alert(count);
+    })
