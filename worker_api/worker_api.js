@@ -40,12 +40,12 @@ async function reObjExecText(reObj, text) {
 //               Default to call reObjExecText()
 // **Return values**
 // result: An array of objects which contains the matched string and its index.
-async function scheduleReObjExecText(reObj, text, threshold = [Infinity]) {
-/*     if (text.length > threshold[0]) {
-        return workerReObjExecText(reObj, text);
-    } */
-    return reObjExecText(reObj, text);
-}
+// async function scheduleReObjExecText(reObj, text, threshold = [Infinity]) {
+// /*     if (text.length > threshold[0]) {
+//         return workerReObjExecText(reObj, text);
+//     } */
+//     return reObjExecText(reObj, text);
+// }
 
 // **Caution**
 // Do add global flag to regular expression object.
@@ -215,12 +215,12 @@ async function wrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches) {
 // matches: An array contains the matched string's index and length.
 // threshold[0]: Determine whether to call wrapMatchedTextInNodeWithMatches_g()
 //               Default to call workerWrapMatchedTextInNodeWithMatches_g()
-async function scheduleWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches, threshold = [Infinity]) {
-/*     if (textNode.data.length + wrapElem.outerHTML * matches.length > threshold[0]) {
-        return workerWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches);
-    } */
-    return wrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches);
-}
+// async function scheduleWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches, threshold = [Infinity]) {
+// /*     if (textNode.data.length + wrapElem.outerHTML * matches.length > threshold[0]) {
+//         return workerWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches);
+//     } */
+//     return wrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches);
+// }
 
 // **Caution**
 // Do add global flag to regular expression object.
@@ -235,9 +235,9 @@ async function scheduleWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, ma
 // **Return values**
 // result: The amount of matches.
 async function wrapMatchedTextInNode_g(reObj, textNode, wrapElem, threshold = [Infinity, Infinity]) {
-    let promise = scheduleReObjExecText(reObj, textNode.data, [threshold[0]]);
+    let promise = reObjExecText(reObj, textNode.data);
     let matches = await promise;
-    await scheduleWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches, [threshold[1]]);
+    await wrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches);
     return matches.length;
 }
 
@@ -318,7 +318,7 @@ async function scheduleWrapMatchedTextInNode_g(reObj, textNode, wrapElem, thresh
 async function wrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, matchesArray, threshold = [Infinity]) {
     await Promise.all(
         textNodeArray.map((textNode, index) =>
-            scheduleWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matchesArray[index], threshold)
+        wrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matchesArray[index])
         )
     );
 }
