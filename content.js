@@ -230,3 +230,25 @@ function triggerHighlightText() {
         }
     );
 }
+
+
+debugger;
+
+highlightText(/\/mnt\/tests\/kernel\/kdump\/crash-sysrq-c/gi, "yellow", undefined, undefined, "mmarkk")
+    .then(count => {
+        let elems = document.getElementsByClassName("mmarkk");
+        let e1 = elems[0];
+        let e2 = elems[1];
+
+        let container = document.createElement("span");
+        while (e1.nextSibling != e2) {
+            container.appendChild(e1.nextSibling);
+        }
+        e2.before(container);
+
+        e1.onclick = event => {
+            if(this.coin == undefined) this.coin=true;
+            coin=!coin;
+            e1.nextSibling.style.display = coin ? "inline" : "none";
+        }
+    });
