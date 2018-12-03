@@ -110,9 +110,10 @@ async function wrapMatchedTextInNodes_(reObj, textNodeArray, wrapElem) {
         });
 }
 
-
-
-
+const LABEL = {
+    classHint: "lr_ht", // log reader hint
+    classWhiteList: "lr_wl", // log reader white list
+}
 
 // **Parameters**
 // rootElem: The node under which the text nodes are found.
@@ -145,10 +146,12 @@ async function getTextNodeArray(rootElem = document) {
     });
 }
 
-const LABEL = {
-    classWhiteList: "lrwl",//"log_reader_white_list",
-}
-
+// **Parameters**
+// reObj: The regular expression object used to match (Do add global flag).
+// hint: The message shows near cursor when hover on matched text.
+// link: The hyperlink binds to matched text.
+// className: Used to explicitly set wrapElem's class.
+// rootElem: The node under which the text nodes are found.
 async function highlightText(reObj, color = "yellow", hint = undefined, link = undefined, className = undefined, rootElem = document) {
 
     if (!className || !className.length) {
@@ -168,11 +171,11 @@ async function highlightText(reObj, color = "yellow", hint = undefined, link = u
     if (hint && hint.length) {
         hintFlag = true;
         hintElement = document.createElement("div");
+        hintElement.classList.add(LABEL.classHint);
         hintElement.classList.add(LABEL.classWhiteList);
         hintElement.innerHTML = hint;
         document.body.append(hintElement);
     }
-
 
     return getTextNodeArray(rootElem)
         .then(textNodeArray => {
@@ -180,37 +183,35 @@ async function highlightText(reObj, color = "yellow", hint = undefined, link = u
         })
         .then(countArray => {
             let elements = document.getElementsByClassName(className);
-            for (let curNode of elements) {
+            for (let curElem of elements) {
                 if (hintFlag) {
-                    curNode.onmouseover = event => {
+                    curElem.onmouseover = event => {
                         hintElement.style.left = event.pageX + 1 + "px";
                         hintElement.style.top = event.pageY + 1 + "px";
                         hintElement.style.display = "block";
-                    }
-                    curNode.onmouseout = () => {
+                    };
+                    curElem.onmouseout = () => {
                         hintElement.style.display = "none";
-                    }
+                    };
                 }
             }
 
             let count = countArray.reduce((pre, cur) => pre + cur, 0);
-            console.log(reObj.toString(),count);
             return count;
         });
 }
-
 
 // Read all rules from local storage, and apply them to highlight the text.
 function triggerHighlightText() {
 
     chrome.storage.local.get(
-        { rules: [] },
+        { highlightRules: [] },
         result => {
             let promise = new Promise((resolve, _) => resolve(0));
-            for (let rule of result.rules) {
+            for (let rule of result.highlightRules) {
                 let reObj;
-                let flag = "g";
                 if (rule.isRegExp) {
+                    let flag = "g";
                     if (!rule.isCensitive) flag += "i";
                     if (rule.isMultiline) flag += "m";
                     reObj = new RegExp(rule.pattern, flag);
@@ -220,12 +221,12 @@ function triggerHighlightText() {
                         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
                     }
                     let pattern = escapeRegExp(rule.pattern);
-                    reObj = new RegExp(pattern, flag);
+                    reObj = new RegExp(pattern, "g");
                 }
                 promise = promise.then(_ => {
                     return highlightText(reObj, rule.color, rule.hint, rule.link);
                 });
             }
         }
-    )
+    );
 }

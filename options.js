@@ -3,13 +3,13 @@ let textareaPortal = document.getElementById("portal");
 
 buttonImport.onclick = () => {
     rules = JSON.parse(textareaPortal.value);
-    chrome.storage.local.set({ rules });
+    chrome.storage.local.set({ highlightRules: rules });
 }
 
 chrome.storage.local.get(
-    { rules: [] },
+    { highlightRules: [] },
     result => {
-        textareaPortal.value = JSON.stringify(result.rules);
+        textareaPortal.value = JSON.stringify(result.highlightRules);
     }
 );
 
@@ -29,9 +29,9 @@ let tableRules = document.getElementById("rules");
 {
     let tbody = document.createElement("tbody");
     chrome.storage.local.get(
-        { rules: [] },
+        { highlightRules: [] },
         result => {
-            let rules = result.rules;
+            let rules = result.highlightRules;
             for (let row = 0; row < rules.length; row++) {
                 let rule = rules[row];
                 let tr = document.createElement("tr");
@@ -49,7 +49,7 @@ let tableRules = document.getElementById("rules");
                             else if (input == "false") input = false;
                         }
                         rules[row][keys[col]] = input;
-                        chrome.storage.local.set({ rules });
+                        chrome.storage.local.set({ highlightRules: rules });
                         document.location.reload(true);
                     }
                     td.appendChild(button);
@@ -62,7 +62,7 @@ let tableRules = document.getElementById("rules");
                 button.onclick = event => {
                     let [_, row] = event.target.id.split("_");
                     rules.splice(row, 1);
-                    chrome.storage.local.set({ rules });
+                    chrome.storage.local.set({ highlightRules: rules });
                     document.location.reload(true);
                 }
                 td.appendChild(button);

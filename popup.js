@@ -64,9 +64,9 @@ checkboxMultiline.onchange = () => {
 // The rules stored in local sotrage are organized as an array.
 buttonAdd.onclick = () => {
     chrome.storage.local.get(
-        { rules: [] },
+        { highlightRules: [] },
         result => {
-            result.rules.push(
+            result.highlightRules.push(
                 {
                     pattern: inputPattern.value,
                     color: inputColor.value,
@@ -77,7 +77,7 @@ buttonAdd.onclick = () => {
                     isMultiline: checkboxRegExp.checked && checkboxMultiline.checked,
                 }
             );
-            chrome.storage.local.set({ rules: result.rules });
+            chrome.storage.local.set({ highlightRules: result.highlightRules });
         }
     )
 }
