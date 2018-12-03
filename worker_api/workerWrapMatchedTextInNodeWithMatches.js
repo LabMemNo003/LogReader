@@ -12,6 +12,9 @@ self.importScripts("xml_for_script/tinyxmlw3cdom.js");
 //      The worker uses id to get each data, so no matter what type the tag is.
 //      <tag id="list"> The result nodes </tag>
 self.onmessage = event => {
+
+    console.log("worker_api/workerWrapMatchedTextInNodeWithMatches.js");
+
     let { xml, matches } = event.data;
     workerWrapMatchedTextInNodeWithMatches_w(xml, matches)
         .then(result => self.postMessage(result));

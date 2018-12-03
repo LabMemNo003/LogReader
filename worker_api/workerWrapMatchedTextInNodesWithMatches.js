@@ -5,6 +5,8 @@ self.importScripts("workerWrapMatchedTextInNodeWithMatches.js")
 self.onmessage = event => {
     let { xmls, matchesArray, threshold } = event.data;
 
+    console.log("worker_api/workerWrapMatchedTextInNodesWithMatches.js");
+
     Promise.all(
         xmls.map((xml, index) => {
             if (xml.length > threshold[0]) {

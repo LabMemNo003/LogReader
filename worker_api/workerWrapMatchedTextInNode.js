@@ -19,6 +19,9 @@ self.importScripts("worker_api.js");
 //      <tag id="list"> The result nodes </tag>
 // count: The amount of matches.
 self.onmessage = event => {
+
+    console.log("worker_api/workerWrapMatchedTextInNode.js");
+
     let { reObj, xml, threshold } = event.data;
 
     let parser = new DOMImplementation();

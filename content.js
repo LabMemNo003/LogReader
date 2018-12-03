@@ -51,7 +51,28 @@ new Promise((resolve, _) => resolve())
         let start = new Date();
         let textNodeArray = getTextNodes(document);
         let textArray = textNodeArray.map(item => item.data);
-        let wrapElem = document.createElement("span");
+        let wrapElem = document.createElement("a");
+        wrapElem.href = "alkdsfjalskfdjsldkfssdlasdfdsfdfgghgjgyhnadsfasdfghnynhhgjykf"
+        wrapElem.style.background = "yellow";
+        return scheduleReObjExecTextArray(/\d+\.\d+/gi, textArray)
+            .then(machesArray => {
+                return scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, machesArray)
+                    // return scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, machesArray, [30000, 30000, 30000])
+                    .then(_ => {
+                        let end = new Date();
+                        console.log(
+                            machesArray.map(item => item.length).reduce((pre, cur) => pre + cur, 0),
+                            end - start
+                        );
+                    });
+            });
+    })
+    .then(_ => {
+        let start = new Date();
+        let textNodeArray = getTextNodes(document);
+        let textArray = textNodeArray.map(item => item.data);
+        let wrapElem = document.createElement("a");
+        wrapElem.href = "alkdsfjalskfdjsldkfssdlasdfdsfdfgghgjgyhnadsfasdfghnynhhgjykf"
         wrapElem.style.background = "yellow";
         return scheduleReObjExecTextArray(/a/gi, textArray)
             .then(machesArray => {
@@ -70,7 +91,8 @@ new Promise((resolve, _) => resolve())
         let start = new Date();
         let textNodeArray = getTextNodes(document);
         let textArray = textNodeArray.map(item => item.data);
-        let wrapElem = document.createElement("span");
+        let wrapElem = document.createElement("a");
+        wrapElem.href = "hiojjoijoijiuhiuhijojuhjiujojoujoijoujuiihiujoijouhasfdjoijouhjouijoijo"
         wrapElem.style.background = "green";
         return scheduleReObjExecTextArray(/e/gi, textArray)
             .then(machesArray => {
@@ -89,7 +111,8 @@ new Promise((resolve, _) => resolve())
         let start = new Date();
         let textNodeArray = getTextNodes(document);
         let textArray = textNodeArray.map(item => item.data);
-        let wrapElem = document.createElement("span");
+        let wrapElem = document.createElement("a");
+        wrapElem.href = "asdfasdfasdfasdfdfgsdfgdfgddsfsadfghdfghdfthfdghyfwef";
         wrapElem.style.background = "red";
         return scheduleReObjExecTextArray(/i/gi, textArray)
             .then(machesArray => {

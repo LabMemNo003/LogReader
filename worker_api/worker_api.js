@@ -20,7 +20,7 @@ async function reObjExecText(reObj, text) {
 }
 
 // Same to reObjExecText(), but delegate workload to new Worker()
-async function workerReObjExecText(reObj, text) {
+/* async function workerReObjExecText(reObj, text) {
     return new Promise((resolve, _) => {
         let worker = new Worker("workerReObjExecText.js");
         worker.postMessage({ reObj, text });
@@ -29,7 +29,7 @@ async function workerReObjExecText(reObj, text) {
             worker.terminate();
         };
     });
-}
+} */
 
 // **Caution**
 // Do add global flag to regular expression object.
@@ -41,9 +41,9 @@ async function workerReObjExecText(reObj, text) {
 // **Return values**
 // result: An array of objects which contains the matched string and its index.
 async function scheduleReObjExecText(reObj, text, threshold = [Infinity]) {
-    if (text.length > threshold[0]) {
+/*     if (text.length > threshold[0]) {
         return workerReObjExecText(reObj, text);
-    }
+    } */
     return reObjExecText(reObj, text);
 }
 
@@ -59,7 +59,7 @@ async function reObjExecTextArray(reObj, textArray) {
 }
 
 // Same to reObjExecTextArray(), but delegate workload to new Worker()
-async function workerReObjExecTextArray(reObj, textArray) {
+/* async function workerReObjExecTextArray(reObj, textArray) {
     return new Promise((resolve, _) => {
         let worker = new Worker("workerReObjExecTextArray.js");
         worker.postMessage({ reObj, textArray });
@@ -68,7 +68,7 @@ async function workerReObjExecTextArray(reObj, textArray) {
             worker.terminate();
         };
     });
-}
+} */
 
 // **Caution**
 // Do add global flag to regular expression object.
@@ -89,14 +89,14 @@ async function scheduleReObjExecTextArray(reObj, textArray, threshold = [Infinit
     let fore = 0;
     let tail = hash.length - 1;
 
-    while (fore <= tail && textLength[hash[fore]] > threshold[0]) {
+/*     while (fore <= tail && textLength[hash[fore]] > threshold[0]) {
         let index = fore;
         promises.push(
             workerReObjExecText(reObj, textArray[hash[index]])
                 .then(result => { results[hash[index]] = result; })
         );
         fore++;
-    }
+    } */
 
     let workload = 0, indices = [];
     while (fore <= tail) {
@@ -107,7 +107,7 @@ async function scheduleReObjExecTextArray(reObj, textArray, threshold = [Infinit
             workload += textLength[hash[fore]];
             fore++;
         }
-        while (fore <= tail && workload + textLength[hash[tail]] <= threshold[1]) {
+/*         while (fore <= tail && workload + textLength[hash[tail]] <= threshold[1]) {
             indices.push(tail);
             workload += textLength[hash[tail]];
             tail--;
@@ -119,7 +119,7 @@ async function scheduleReObjExecTextArray(reObj, textArray, threshold = [Infinit
                 workerReObjExecTextArray(reObj, indices.map(item => textArray[hash[item]]))
                     .then(result => { result.forEach((item, index) => results[hash[indices[index]]] = item); })
             );
-        }
+        } */
     }
     if (indices.length > 0) {
         promises.push(
@@ -165,7 +165,7 @@ async function wrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches) {
 }
 
 // Same to wrapMatchedTextInNodeWithMatches_g(), but delegate workload to new Worker() 
-async function workerWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches) {
+/* async function workerWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches) {
     return new Promise((resolve, _) => {
         // xml: The XML typed string which contains the text to be matched and the template used to wrap the matched string.
         //      The worker uses id to get each data, so no matter what type the tag is.
@@ -207,7 +207,7 @@ async function workerWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matc
             worker.terminate();
         };
     });
-}
+} */
 
 // **Parameters**
 // textNode: The node in which the text to be wrapped.
@@ -216,9 +216,9 @@ async function workerWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matc
 // threshold[0]: Determine whether to call wrapMatchedTextInNodeWithMatches_g()
 //               Default to call workerWrapMatchedTextInNodeWithMatches_g()
 async function scheduleWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches, threshold = [Infinity]) {
-    if (textNode.data.length + wrapElem.outerHTML * matches.length > threshold[0]) {
+/*     if (textNode.data.length + wrapElem.outerHTML * matches.length > threshold[0]) {
         return workerWrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches);
-    }
+    } */
     return wrapMatchedTextInNodeWithMatches_g(textNode, wrapElem, matches);
 }
 
@@ -242,7 +242,7 @@ async function wrapMatchedTextInNode_g(reObj, textNode, wrapElem, threshold = [I
 }
 
 // Same to wrapMatchedTextByDom_g(), but delegate workload to new Worker()
-async function workerWrapMatchedTextInNode_g(reObj, textNode, wrapElem, threshold = [Infinity, Infinity]) {
+/* async function workerWrapMatchedTextInNode_g(reObj, textNode, wrapElem, threshold = [Infinity, Infinity]) {
     return new Promise((resolve, _) => {
         // **Caution**
         // Do add global flag to regular expression object.
@@ -287,7 +287,7 @@ async function workerWrapMatchedTextInNode_g(reObj, textNode, wrapElem, threshol
             worker.terminate();
         };
     });
-}
+} */
 
 // **Caution**
 // Do add global flag to regular expression object.
@@ -304,9 +304,9 @@ async function workerWrapMatchedTextInNode_g(reObj, textNode, wrapElem, threshol
 // **Return values**
 // result: The amount of matches.
 async function scheduleWrapMatchedTextInNode_g(reObj, textNode, wrapElem, threshold = [Infinity, Infinity, Infinity]) {
-    if (textNode.data.length > threshold[2]) {
+/*     if (textNode.data.length > threshold[2]) {
         return workerWrapMatchedTextInNode_g(reObj, textNode, wrapElem, [threshold[0], threshold[1]]);
-    }
+    } */
     return wrapMatchedTextInNode_g(reObj, textNode, wrapElem, [threshold[0], threshold[1]]);
 }
 
@@ -324,7 +324,7 @@ async function wrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, matc
 }
 
 // Same to wrapMatchedTextInNodesWithMatches_g,  but delegate workload to new Worker()
-async function workerWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, matchesArray, threshold = [Infinity]) {
+/* async function workerWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem, matchesArray, threshold = [Infinity]) {
     return new Promise((solve, _) => {
         let textElem = document.createElement("span");
         textElem.id = "text";
@@ -356,7 +356,7 @@ async function workerWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapElem
             worker.terminate();
         };
     });
-}
+} */
 
 // textNodeArray: An array of nodes in which the text to be wrapped.
 // wrapElem: The element in which the matched string to be wrapped.
@@ -374,13 +374,13 @@ async function scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapEl
     let fore = 0;
     let tail = hash.length - 1;
 
-    while (fore <= tail && textLength[hash[fore]] > threshold[1]) {
+/*     while (fore <= tail && textLength[hash[fore]] > threshold[1]) {
         let index = fore;
         promises.push(
             scheduleWrapMatchedTextInNodeWithMatches_g(textNodeArray[hash[index]], wrapElem, matchesArray[hash[index]], [threshold[0]])
         );
         fore++;
-    }
+    } */
 
     let workload = 0, indices = [];
     while (fore <= tail) {
@@ -391,7 +391,7 @@ async function scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapEl
             workload += textLength[hash[fore]];
             fore++;
         }
-        while (fore <= tail && workload + textLength[hash[tail]] <= threshold[2]) {
+/*         while (fore <= tail && workload + textLength[hash[tail]] <= threshold[2]) {
             indices.push(tail);
             workload += textLength[hash[tail]];
             tail--;
@@ -402,7 +402,7 @@ async function scheduleWrapMatchedTextInNodesWithMatches_g(textNodeArray, wrapEl
             promises.push(
                 workerWrapMatchedTextInNodesWithMatches_g(indices.map(item => textNodeArray[hash[item]]), wrapElem, indices.map(item => matchesArray[hash[item]]), [threshold[0]])
             );
-        }
+        } */
     }
     if (indices.length > 0) {
         promises.push(
