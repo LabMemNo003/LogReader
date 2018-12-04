@@ -13,13 +13,13 @@ let textareaPortal = document.getElementById("portal");
 
 buttonImport.onclick = () => {
     let {
-        version = "0.0.0",
+        formatVersion = "0.0",
         highlightRules = [],
         collapseExpandRules = [],
     } = JSON.parse(textareaPortal.value);
     chrome.storage.local.set(
         {
-            version,
+            formatVersion,
             highlightRules,
             collapseExpandRules,
         }
@@ -28,7 +28,7 @@ buttonImport.onclick = () => {
 
 chrome.storage.local.get(
     {
-        version: "0.0.0",
+        formatVersion: "0.0",
         highlightRules: [],
         collapseExpandRules: [],
     },
