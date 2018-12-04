@@ -291,7 +291,11 @@ async function collapseExpand(start = { reObj, color: "yellow", hint: undefined,
                         }
                     };
 
+                    addBrElement(endElem);
                     count++;
+                }
+                else{
+                    addBrElement(startElem);
                 }
             }
 
@@ -346,6 +350,7 @@ async function collapseExpandRestNodes(startColor = "lime", endColor = "green", 
                     }
                 };
 
+                addBrElement(eDummy);
                 count++;
                 continue;
             }
@@ -366,6 +371,12 @@ async function collapseExpandRestNodes(startColor = "lime", endColor = "green", 
     });
 }
 
+// Add a <br /> element after node.
+function addBrElement(node) {
+    let br = document.createElement("br");
+    node.after(br);
+}
+
 // Use the rule read from local storage to create a regular expression object.
 function createReObj({ pattern, isRegExp, isCensitive, isMultiline }) {
     let flag = "g";
@@ -380,6 +391,7 @@ function createReObj({ pattern, isRegExp, isCensitive, isMultiline }) {
     return reObj;
 }
 
+// See element.normalize()
 function normalize(rootNode = document) {
     if (this.done == undefined) {
         this.done = true;
