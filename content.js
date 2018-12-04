@@ -294,9 +294,6 @@ async function collapseExpand(start = { reObj, color: "yellow", hint: undefined,
                     addBrElement(endElem);
                     count++;
                 }
-                else{
-                    addBrElement(startElem);
-                }
             }
 
             return {
@@ -318,40 +315,45 @@ async function collapseExpandRestNodes(startColor = "lime", endColor = "green", 
             let node = stack.pop();
 
             if (node instanceof Text) {
-                let container = document.createElement("span");
-                container.classList.add(LABEL.classCE);
-                container.style.display = "none";
-                node.before(container);
-                container.appendChild(node);
+                if (node.data.trim().length) {
+                    let container = document.createElement("span");
+                    container.classList.add(LABEL.classCE);
+                    container.style.display = "none";
+                    node.before(container);
+                    container.appendChild(node);
 
-                let sDummy = document.createElement("span");
-                sDummy.classList.add(LABEL.classDummy);
-                sDummy.classList.add(LABEL.classCEStart);
-                sDummy.classList.add(LABEL.classWhiteList);
-                sDummy.style.backgroundColor = startColor;
-                sDummy.innerText = "[ Dummy - collpase/expand start ]";
-                container.before(sDummy);
+                    let sDummy = document.createElement("span");
+                    sDummy.classList.add(LABEL.classDummy);
+                    sDummy.classList.add(LABEL.classCEStart);
+                    sDummy.classList.add(LABEL.classWhiteList);
+                    sDummy.style.backgroundColor = startColor;
+                    sDummy.innerText = "[ Dummy - collpase/expand start ]";
+                    container.before(sDummy);
 
-                let eDummy = document.createElement("span");
-                eDummy.classList.add(LABEL.classDummy);
-                eDummy.classList.add(LABEL.classCEEnd);
-                eDummy.classList.add(LABEL.classWhiteList);
-                eDummy.style.backgroundColor = endColor;
-                eDummy.innerText = "[ Dummy - collpase/expand end ]";
-                container.after(eDummy);
+                    let eDummy = document.createElement("span");
+                    eDummy.classList.add(LABEL.classDummy);
+                    eDummy.classList.add(LABEL.classCEEnd);
+                    eDummy.classList.add(LABEL.classWhiteList);
+                    eDummy.style.backgroundColor = endColor;
+                    eDummy.innerText = "[ Dummy - collpase/expand end ]";
+                    container.after(eDummy);
 
-                sDummy.ondblclick = eDummy.ondblclick = _ => {
-                    let status = container.style.display;
-                    if (status == "inline") {
-                        container.style.display = "none";
-                    }
-                    else {
-                        container.style.display = "inline";
-                    }
-                };
+                    sDummy.ondblclick = eDummy.ondblclick = _ => {
+                        let status = container.style.display;
+                        if (status == "inline") {
+                            container.style.display = "none";
+                        }
+                        else {
+                            container.style.display = "inline";
+                        }
+                    };
 
-                addBrElement(eDummy);
-                count++;
+                    addBrElement(eDummy);
+                    count++;
+                }
+                else{
+                    node.remove();
+                }
                 continue;
             }
 
