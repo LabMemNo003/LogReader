@@ -111,10 +111,13 @@ async function wrapMatchedTextInNodes_(reObj, textNodeArray, wrapElem) {
 }
 
 const LABEL = {
+    classHighlight: "lr_hl", // log reader highlight
     classHint: "lr_ht", // log reader hint
     classWhiteList: "lr_wl", // log reader white list
+    classCE: "lr_ce", // log reader collapse expand
     classCEStart: "lr_ces", // log reader collapse expand start
     classCEEnd: "lr_cee", // log reader collapse expand end
+    classDummy: "lr_dm", // log reader dummy
 }
 
 // **Parameters**
@@ -165,6 +168,7 @@ async function highlightText({ reObj, color = "yellow", hint = undefined, link =
 
     let wrapElem = document.createElement("a");
     wrapElem.classList.add(className);
+    wrapElem.classList.add(LABEL.classHighlight);
     wrapElem.classList.add(LABEL.classWhiteList);
     wrapElem.style.backgroundColor = color;
 
@@ -269,9 +273,10 @@ async function collapseExpand(start = { reObj, color: "yellow", hint: undefined,
                 }
                 if (flag && candidates.length) {
                     let container = document.createElement("span");
+                    container.classList.add(LABEL.classCE);
                     container.style.display = "none";
-                    for (let node of candidates) {
-                        container.appendChild(node);
+                    for (let candidate of candidates) {
+                        container.appendChild(candidate);
                     }
                     let endElem = startElem.nextSibling;
                     startElem.after(container);
@@ -298,6 +303,79 @@ async function collapseExpand(start = { reObj, color: "yellow", hint: undefined,
         });
 }
 
+// **Return values"
+// count: The amount of collapse/expand elements.
+async function collapseExpandRestNodes(startColor = "lime", endColor = "green", rootElem = document) {
+    return new Promise((resolve, _) => {
+        let count = 0;
+        let candidates = [];
+        let stack = [rootElem];
+        while (stack.length) {
+            let node = stack.pop();
+
+            if (node instanceof Text) {
+                candidates.push(node);
+                continue;
+            }
+
+            if (node instanceof Element &&
+                candidates.length &&
+                (
+                    node.classList.contains(LABEL.classWhiteList) ||
+                    node.classList.contains(LABEL.classCE)
+                ) /* &&
+                candidates.reduce((pre, item) => pre + item.data.length, 0) */
+            ) {
+
+                let container = document.createElement("span");
+                container.classList.add(LABEL.classCE);
+                container.style.display = "none";
+                candidates[0].before(container);
+                for (let candidate of candidates) {
+                    container.appendChild(candidate);
+                }
+                candidates = [];
+
+                let sDummy = document.createElement("span");
+                sDummy.classList.add(LABEL.classDummy);
+                sDummy.classList.add(LABEL.classCEStart);
+                sDummy.classList.add(LABEL.classWhiteList);
+                sDummy.style.backgroundColor = startColor;
+                sDummy.innerText = "[ Dummy - collpase/expand start ]";
+                container.before(sDummy);
+
+                let eDummy = document.createElement("span");
+                eDummy.classList.add(LABEL.classDummy);
+                eDummy.classList.add(LABEL.classCEEnd);
+                eDummy.classList.add(LABEL.classWhiteList);
+                eDummy.style.backgroundColor = endColor;
+                eDummy.innerText = "[ Dummy - collpase/expand end ]";
+                container.after(eDummy);
+
+                sDummy.ondblclick = eDummy.ondblclick = _ => {
+                    let status = container.style.display;
+                    if (status == "inline") {
+                        container.style.display = "none";
+                    }
+                    else {
+                        container.style.display = "inline";
+                    }
+                };
+
+                count++;
+                continue;
+            }
+
+            let child = node.lastChild;
+            while (child) {
+                stack.push(child);
+                child = child.previousSibling;
+            }
+        }
+        resolve(count);
+    });
+}
+
 // Use the rule read from local storage to create a regular expression object.
 function createReObj({ pattern, isRegExp, isCensitive, isMultiline }) {
     let flag = "g";
@@ -312,39 +390,71 @@ function createReObj({ pattern, isRegExp, isCensitive, isMultiline }) {
     return reObj;
 }
 
-// Read all rules from local storage, and apply them to highlight the text.
-function triggerHighlightText() {
+function normalize(rootNode = document) {
+    if (this.done == undefined) {
+        this.done = true;
+        rootNode.normalize();
+    }
+}
 
-    chrome.storage.local.get(
-        { highlightRules: [] },
-        result => {
-            let promise = new Promise((resolve, _) => resolve(0));
-            let rules = result.highlightRules;
-            for (let rule of rules) {
-                rule.reObj = createReObj(rule);
-                promise = promise.then(_ => {
-                    return highlightText(rule);
+// Read all rules from local storage, and apply them to highlight the text.
+async function triggerHighlightText() {
+    return new Promise((resolve, _) => {
+        normalize();
+        chrome.storage.local.get(
+            { highlightRules: [] },
+            result => {
+                let promise = new Promise((resolve, _) => resolve(0));
+                let rules = result.highlightRules;
+                for (let rule of rules) {
+                    rule.reObj = createReObj(rule);
+                    promise = promise.then(_ => {
+                        return highlightText(rule);
+                    });
+                }
+                promise.then(_ => {
+                    resolve(true);
                 });
             }
-        }
-    );
+        );
+    });
 }
 
 // Read all rules from local storage, and apply them to collapse and expand text.
-function triggerCollapseExpand() {
-
-    chrome.storage.local.get(
-        { collapseExpandRules: [] },
-        result => {
-            let promise = new Promise((resolve, _) => resolve(0));
-            let rules = result.collapseExpandRules;
-            for (let rule of rules) {
-                rule.start.reObj = createReObj(rule.start);
-                rule.end.reObj = createReObj(rule.end);
-                promise = promise.then(_ => {
-                    return collapseExpand(rule.start, rule.end);
+async function triggerCollapseExpand() {
+    return new Promise((resolve, _) => {
+        normalize();
+        chrome.storage.local.get(
+            { collapseExpandRules: [] },
+            result => {
+                let promise = new Promise((resolve, _) => resolve(0));
+                let rules = result.collapseExpandRules;
+                for (let rule of rules) {
+                    rule.start.reObj = createReObj(rule.start);
+                    rule.end.reObj = createReObj(rule.end);
+                    promise = promise.then(_ => {
+                        return collapseExpand(rule.start, rule.end);
+                    });
+                }
+                promise.then(_ => {
+                    resolve(true);
                 });
             }
-        }
-    );
+        );
+    });
+}
+
+// A wrap of collapseExpandRestNodes()
+async function triggerCollapseExpandRestNodes() {
+    normalize();
+    return collapseExpandRestNodes();
+}
+
+// Trigger all trigger...functions
+async function triggerAll() {
+    normalize();
+    return triggerCollapseExpand()
+        .then(_ => {
+            return triggerCollapseExpandRestNodes();
+        });
 }
