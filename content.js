@@ -163,7 +163,7 @@ async function getTextNodeArray(rootElem = document) {
 async function highlightText({ reObj, color = "yellow", hint = undefined, link = undefined, className = undefined }, rootElem = document) {
 
     if (!className || !className.length) {
-        className = reObj.toString();
+        className = reObj.toString().replace(/\s/g, "");
     }
 
     let wrapElem = document.createElement("a");
@@ -308,33 +308,17 @@ async function collapseExpand(start = { reObj, color: "yellow", hint: undefined,
 async function collapseExpandRestNodes(startColor = "lime", endColor = "green", rootElem = document) {
     return new Promise((resolve, _) => {
         let count = 0;
-        let candidates = [];
         let stack = [rootElem];
+
         while (stack.length) {
             let node = stack.pop();
 
             if (node instanceof Text) {
-                candidates.push(node);
-                continue;
-            }
-
-            if (node instanceof Element &&
-                candidates.length &&
-                (
-                    node.classList.contains(LABEL.classWhiteList) ||
-                    node.classList.contains(LABEL.classCE)
-                ) /* &&
-                candidates.reduce((pre, item) => pre + item.data.length, 0) */
-            ) {
-
                 let container = document.createElement("span");
                 container.classList.add(LABEL.classCE);
                 container.style.display = "none";
-                candidates[0].before(container);
-                for (let candidate of candidates) {
-                    container.appendChild(candidate);
-                }
-                candidates = [];
+                node.before(container);
+                container.appendChild(node);
 
                 let sDummy = document.createElement("span");
                 sDummy.classList.add(LABEL.classDummy);
@@ -368,7 +352,13 @@ async function collapseExpandRestNodes(startColor = "lime", endColor = "green", 
 
             let child = node.lastChild;
             while (child) {
-                stack.push(child);
+                if (!(child instanceof Element) ||
+                    !child.classList.contains(LABEL.classWhiteList) &&
+                    !child.classList.contains(LABEL.classCE)
+                ) {
+                    stack.push(child);
+                }
+
                 child = child.previousSibling;
             }
         }

@@ -264,3 +264,12 @@ ce_buttonClean.onclick = () => {
 ce_buttonTrigger.onclick = () => {
     chrome.tabs.executeScript({ code: 'triggerCollapseExpand();' });
 };
+
+// ----------------------------------------------------------------------------
+// Trigger all
+// ----------------------------------------------------------------------------
+let all_buttonTrigger = document.getElementById("all_trigger");
+
+all_buttonTrigger.onclick = () => {
+    chrome.tabs.executeScript({ code: "triggerAll();" });
+}
