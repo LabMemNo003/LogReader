@@ -321,7 +321,7 @@ function triggerHighlightText() {
             let promise = new Promise((resolve, _) => resolve(0));
             let rules = result.highlightRules;
             for (let rule of rules) {
-                reule.reObj = createReObj(rule);
+                rule.reObj = createReObj(rule);
                 promise = promise.then(_ => {
                     return highlightText(rule);
                 });
