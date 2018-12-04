@@ -113,6 +113,8 @@ async function wrapMatchedTextInNodes_(reObj, textNodeArray, wrapElem) {
 const LABEL = {
     classHint: "lr_ht", // log reader hint
     classWhiteList: "lr_wl", // log reader white list
+    classCEStart: "lr_ces", // log reader collapse expand start
+    classCEEnd: "lr_cee", // log reader collapse expand end
 }
 
 // **Parameters**
@@ -152,7 +154,10 @@ async function getTextNodeArray(rootElem = document) {
 // link: The hyperlink binds to matched text.
 // className: Used to explicitly set wrapElem's class.
 // rootElem: The node under which the text nodes are found.
-async function highlightText(reObj, color = "yellow", hint = undefined, link = undefined, className = undefined, rootElem = document) {
+// **Return values**
+// count: The amount of highlight strings.
+// className: Can be used to get all highlight string's elements.
+async function highlightText({ reObj, color = "yellow", hint = undefined, link = undefined, className = undefined }, rootElem = document) {
 
     if (!className || !className.length) {
         className = reObj.toString();
@@ -197,8 +202,114 @@ async function highlightText(reObj, color = "yellow", hint = undefined, link = u
             }
 
             let count = countArray.reduce((pre, cur) => pre + cur, 0);
-            return count;
+            return {
+                count,
+                className,
+            };
         });
+}
+
+// **Parameters**
+// start: The collapse starts at the point where the start.reObj get matched. 
+// end: The collapse ends at the point where the end.reObj get matched.
+//      reObj: The regular expression object used to match (Do add global flag).
+//      hint: The message shows near cursor when hover on matched text.
+//      link: The hyperlink binds to matched text.
+//      className: Used to explicitly set wrapElem's class.
+// rootElem: The node under which the text nodes are found.
+// **Return values**
+// count: The amount of highlight strings.
+// startClassName: Can be used to get all collapses' start point elements.
+// endClassName:  Can be used to get all collapses's end point elements.
+async function collapseExpand(start = { reObj, color: "yellow", hint: undefined, link: undefined, className: undefined },
+    end = { reObj, color: "yellow", hint: undefined, link: undefined, className: undefined }, rootElem = document) {
+    if (this.uniqueID == undefined) {
+        this.uniqueID = 0;
+    }
+    else {
+        this.uniqueID++;
+    }
+
+    if (!start.className || !start.className.length) {
+        start.className = LABEL.classCEStart + "_" + uniqueID;
+    }
+    if (!end.className || !end.className.length) {
+        end.className = LABEL.classCEEnd + "_" + uniqueID;
+    }
+
+    return highlightText(start)
+        .then(_ => {
+            return highlightText(end);
+        })
+        .then(_ => {
+            let startElems = document.getElementsByClassName(start.className);
+            let endElems = document.getElementsByClassName(end.className);
+            if (startElems.length == 0 || endElems.length == 0) {
+                return;
+            }
+
+            let count = 0;
+            for (let startElem of startElems) {
+                let candidates = [];
+                let flag = false;
+                let nextNode = startElem.nextSibling;
+                while (true) {
+                    if (nextNode == null) break;
+                    if (nextNode instanceof Element) {
+                        if (nextNode.classList.contains(end.className)) {
+                            flag = true;
+                            break;
+                        }
+                        else if (nextNode.classList.contains(start.className)) {
+                            break;
+                        }
+                    }
+                    candidates.push(nextNode);
+                    nextNode = nextNode.nextSibling;
+                }
+                if (flag && candidates.length) {
+                    let container = document.createElement("span");
+                    container.style.display = "none";
+                    for (let node of candidates) {
+                        container.appendChild(node);
+                    }
+                    let endElem = startElem.nextSibling;
+                    startElem.after(container);
+
+                    startElem.ondblclick = endElem.ondblclick = _ => {
+                        let status = container.style.display;
+                        if (status == "inline") {
+                            container.style.display = "none";
+                        }
+                        else {
+                            container.style.display = "inline";
+                        }
+                    };
+
+                    count++;
+                }
+            }
+
+            return {
+                count,
+                startClassName: start.className,
+                endClassName: end.className,
+            };
+        });
+}
+
+// Use the rule read from local storage to create a regular expression object.
+function createReObj({ pattern, isRegExp, isCensitive, isMultiline }) {
+    let flag = "g";
+    if (isRegExp) {
+        if (!isCensitive) flag += "i";
+        if (isMultiline) flag += "m";
+    }
+    else {
+        pattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    let reObj = new RegExp(pattern, flag);
+    return reObj;
 }
 
 // Read all rules from local storage, and apply them to highlight the text.
@@ -208,47 +319,32 @@ function triggerHighlightText() {
         { highlightRules: [] },
         result => {
             let promise = new Promise((resolve, _) => resolve(0));
-            for (let rule of result.highlightRules) {
-                let reObj;
-                if (rule.isRegExp) {
-                    let flag = "g";
-                    if (!rule.isCensitive) flag += "i";
-                    if (rule.isMultiline) flag += "m";
-                    reObj = new RegExp(rule.pattern, flag);
-                }
-                else {
-                    function escapeRegExp(string) {
-                        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-                    }
-                    let pattern = escapeRegExp(rule.pattern);
-                    reObj = new RegExp(pattern, "g");
-                }
+            let rules = result.highlightRules;
+            for (let rule of rules) {
+                reule.reObj = createReObj(rule);
                 promise = promise.then(_ => {
-                    return highlightText(reObj, rule.color, rule.hint, rule.link);
+                    return highlightText(rule);
                 });
             }
         }
     );
 }
 
+// Read all rules from local storage, and apply them to collapse and expand text.
+function triggerCollapseExpand() {
 
-debugger;
-
-highlightText(/\/mnt\/tests\/kernel\/kdump\/crash-sysrq-c/gi, "yellow", undefined, undefined, "mmarkk")
-    .then(count => {
-        let elems = document.getElementsByClassName("mmarkk");
-        let e1 = elems[0];
-        let e2 = elems[1];
-
-        let container = document.createElement("span");
-        while (e1.nextSibling != e2) {
-            container.appendChild(e1.nextSibling);
+    chrome.storage.local.get(
+        { collapseExpandRules: [] },
+        result => {
+            let promise = new Promise((resolve, _) => resolve(0));
+            let rules = result.collapseExpandRules;
+            for (let rule of rules) {
+                rule.start.reObj = createReObj(rule.start);
+                rule.end.reObj = createReObj(rule.end);
+                promise = promise.then(_ => {
+                    return collapseExpand(rule.start, rule.end);
+                });
+            }
         }
-        e2.before(container);
-
-        e1.onclick = event => {
-            if(this.coin == undefined) this.coin=true;
-            coin=!coin;
-            e1.nextSibling.style.display = coin ? "inline" : "none";
-        }
-    });
+    );
+}
