@@ -83,7 +83,7 @@ let hl_tableRules = document.getElementById("hl_rules");
                     button.id = "index_" + row + "_" + col;
                     button.onclick = event => {
                         let [_, row, col] = event.target.id.split("_");
-                        let input = prompt("update to:");
+                        let input = prompt("update to:", event.target.innerText);
                         if (col == 4 || col == 5 || col == 6) {
                             if (input == "true") input = true;
                             else if (input == "false") input = false;
@@ -205,7 +205,7 @@ let ce_tableRules = document.getElementById("ce_rules");
                         button.id = "index_" + row + "_" + col;
                         button.onclick = event => {
                             let [_, row, col] = event.target.id.split("_");
-                            let input = prompt("update to:");
+                            let input = prompt("update to:", event.target.innerText);
                             if (col == 4 || col == 5 || col == 6) {
                                 if (input == "true") input = true;
                                 else if (input == "false") input = false;
