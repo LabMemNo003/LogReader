@@ -2,6 +2,10 @@
 - [x] H: Implement highlight text (callback)
 - [x] H: Performance improvement (promise)
 - [x] H: Implement collapse/expand text
-- [ ] H: Reimplement collapse/expand text (need to extend RE)
+- [x] H: Reimplement collapse/expand text (extend RE) (recursive CE)
 - [ ] L: Dynamically update web page instead of reloading it
 - [ ] M: Implement statistic of match results and show it
+- [ ] L: Performance improvement on collapseExpand()
+- [ ] L: Use `<input type="color">` to choose color
+- [ ] M: Automatically scroll down to desired element
+- [ ] L: Add link to collapse/expand's start/end element

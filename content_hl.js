@@ -219,7 +219,7 @@ async function triggerHighlightText() {
                     });
                 }
                 promise.then(_ => {
-                    resolve(true);
+                    resolve(0);
                 });
             }
         );
