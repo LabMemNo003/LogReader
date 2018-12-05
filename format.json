@@ -1,0 +1,36 @@
+{
+    "formatVersion": "1.0",
+    "highlightRules": [
+        {
+            "pattern": "hl",
+            "color": "red",
+            "hint": "hl_hint",
+            "link": "hl_link",
+            "isRegExp": true,
+            "isCensitive": false,
+            "isMultiline": false
+        }
+    ],
+    "collapseExpandRules": [
+        {
+            "start": {
+                "pattern": "ces",
+                "color": "green",
+                "hint": "ces_hint",
+                "link": "ces_link",
+                "isRegExp": true,
+                "isCensitive": false,
+                "isMultiline": false
+            },
+            "end": {
+                "pattern": "cee",
+                "color": "blue",
+                "hint": "cee_hint",
+                "link": "cee_link",
+                "isRegExp": true,
+                "isCensitive": false,
+                "isMultiline": false
+            }
+        }
+    ]
+}
