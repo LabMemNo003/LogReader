@@ -30,7 +30,10 @@
                 "file://*/*"
             ],
             "js": [
-                "content.js"
+                "utility.js",
+                "content.js",
+                "content_hl.js",
+                "content_ce.js"
             ],
             "css": [
                 "content.css"
