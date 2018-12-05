@@ -182,7 +182,7 @@ async function highlightText({ reObj, color = "yellow", hint = undefined, link =
         hintElement = document.createElement("div");
         hintElement.classList.add(LABEL.classHint);
         hintElement.classList.add(LABEL.classWhiteList);
-        hintElement.innerHTML = hint;
+        hintElement.innerText = hint;
         document.body.append(hintElement);
     }
 
