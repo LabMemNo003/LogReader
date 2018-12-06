@@ -215,7 +215,16 @@ async function triggerHighlightText() {
                 for (let rule of rules) {
                     rule.reObj = createGlobalReObj(rule);
                     promise = promise.then(_ => {
-                        return highlightText(rule);
+                        return highlightText(rule)
+                            .then(result => {
+                                HL_datum.push(
+                                    {
+                                        rule,
+                                        result,
+                                    }
+                                );
+                                return 0;
+                            });
                     });
                 }
                 promise.then(_ => {

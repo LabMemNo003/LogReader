@@ -16,6 +16,20 @@ function createReObj({ pattern, isRegExp, isCensitive, isMultiline }, flag = "")
     return reObj;
 }
 
+// Compare two reObj without compiling them
+function compareReObjRule(rule1, rule2) {
+    if (rule1.isRegExp != rule2.isRegExp)
+        return false;
+    if (rule1.isRegExp == false &&
+        rule1.pattern != rule2.pattern)
+        return false;
+    if (rule1.isCensitive != rule2.isCensitive ||
+        rule1.isMultiline != rule2.isMultiline ||
+        rule1.pattern != rule2.pattern)
+        return false;
+    return true;
+}
+
 // See element.normalize()
 function normalize(rootNode = document) {
     if (this.done == undefined) {

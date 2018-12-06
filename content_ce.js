@@ -14,7 +14,7 @@ function replacePattern(pattern, strings, extract = /\[:(\d+):\]/g) {
 // Add a <br /> element after node.
 function addBrElement(node) {
     let br = document.createElement("br");
-    br.classList.add(LABEL.classDummy);
+    br.classList.add(LABEL.classEnter);
     node.after(br);
     return br;
 }
@@ -206,7 +206,8 @@ async function collapseExpandRestNodes(startColor = "lime", endColor = "green", 
                     !child.classList.contains(LABEL.classCE) &&
                     !child.classList.contains(LABEL.classCEStart) &&
                     !child.classList.contains(LABEL.classCEEnd) &&
-                    !child.classList.contains(LABEL.classDummy)
+                    !child.classList.contains(LABEL.classDummy) &&
+                    !child.classList.contains(LABEL.classEnter)
                 ) {
                     stack.push(child);
                 }
@@ -273,7 +274,16 @@ async function triggerCollapseExpand() {
                 let rules = result.collapseExpandRules;
                 for (let rule of rules) {
                     promise = promise.then(_ => {
-                        return collapseExpand(rule);
+                        return collapseExpand(rule)
+                            .then(result => {
+                                CE_datum.push(
+                                    {
+                                        rule,
+                                        result,
+                                    }
+                                );
+                                return 0;
+                            });
                     });
                 }
                 promise.then(_ => {

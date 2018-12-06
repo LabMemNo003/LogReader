@@ -10,3 +10,4 @@
 - [ ] M: Automatically scroll down to desired element - 2018/12/05
 - [ ] L: Add link to collapse/expand's start/end element - 2018/12/05
 - [ ] L: Allow to change precedence of rules - 2018/12/05
+- [ ] M: Add URL filters to select rules to be executed - 2018/12/06

@@ -33,7 +33,8 @@
                 "utility.js",
                 "content.js",
                 "content_hl.js",
-                "content_ce.js"
+                "content_ce.js",
+                "content_sp.js"
             ],
             "css": [
                 "content.css"
