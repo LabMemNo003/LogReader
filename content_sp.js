@@ -54,27 +54,49 @@ class HLData extends SPData {
         let minusElem = document.createElement("button");
         minusElem.innerText = "-";
         minusElem.onclick = () => {
+            if (index) {
+                nodes[index - 1].style.fontWeight = "normal";
+            }
             index--;
             if (index < 0) {
                 index = count;
             }
             indexElem.innerText = index;
+            let node = nodes[index - 1];
+            while (node.parentElement) {
+                if (node.classList.contains(LABEL.classCE)) {
+                    node.style.display = "inline";
+                }
+                node = node.parentElement;
+            }
+            nodes[index - 1].style.fontWeight = "bold";
             nodes[index - 1].scrollIntoViewIfNeeded(true);
         };
         containerElem.appendChild(minusElem);
-        
+
         let indexElem = document.createElement("span");
         indexElem.innerText = index;
         containerElem.appendChild(indexElem);
-        
+
         let plusElem = document.createElement("button");
         plusElem.innerText = "+";
         plusElem.onclick = () => {
+            if (index) {
+                nodes[index - 1].style.fontWeight = "normal";
+            }
             index++;
             if (index > count) {
                 index = 1;
             }
             indexElem.innerText = index;
+            let node = nodes[index - 1];
+            while (node.parentElement) {
+                if (node.classList.contains(LABEL.classCE)) {
+                    node.style.display = "inline";
+                }
+                node = node.parentElement;
+            }
+            nodes[index - 1].style.fontWeight = "bold";
             nodes[index - 1].scrollIntoViewIfNeeded(true);
         }
         containerElem.appendChild(plusElem);

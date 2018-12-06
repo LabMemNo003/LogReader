@@ -4,10 +4,11 @@
 - [x] H: Implement collapse/expand text - 2018/12/03~2018/12/04
 - [x] H: Reimplement collapse/expand text (extend RE) (recursive CE) - 2018/12/04~2018/12/05
 - [ ] L: Dynamically update web page instead of reloading it - 2018/12/05
-- [ ] M: Implement statistic of match results and show it - 2018/12/05
+- [x] M: Implement statistic of match results and show it - 2018/12/05~2018/12/07
 - [ ] L: Performance improvement on collapseExpand() (Break loop) - 2018/12/05
 - [ ] L: Use `<input type="color">` to choose color - 2018/12/05
-- [ ] M: Automatically scroll down to desired element - 2018/12/05
+- [x] M: Automatically scroll down to desired element - 2018/12/05~2018/12/07
 - [ ] L: Add link to collapse/expand's start/end element - 2018/12/05
 - [ ] L: Allow to change precedence of rules - 2018/12/05
 - [ ] M: Add URL filters to select rules to be executed - 2018/12/06
+- [ ] M: Improve the performance about statistic panel - 2018/12/07
