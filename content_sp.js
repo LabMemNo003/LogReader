@@ -1,105 +1,170 @@
-class Datum extends Array {
-    isZeroCount(item) { return false; }
-    compareRule(item1, item2) { return false; }
-    getItemSummary(item) { return "[ Dummy - statistic panel ]"; }
-    getItemElement(item) {
+// The data shown in panel need to implement following interface
+class SPData {
+    isZeroCount() { return false; }
+    isEqualByRule(item) { return false; }
+    getSummary() { return "[ Dummy - statistic panel ]"; }
+    getElement() {
         let dummy = document.createElement("span");
+        dummy.classList.add(LABEL.classDummy);
         dummy.style.backgroundColor = "gray";
-        dummy.innerText = this.getItemSummary(item);
+        dummy.innerText = this.getSummary();
         return dummy;
     }
+}
 
-    debugging() {
-        for (let item of this) {
-            console.log(this.getItemSummary(item));
-        }
+// rules about Highlight text and its corresponding results
+class HLData extends SPData {
+    constructor(rule, result) {
+        super();
+        this.rule = rule;
+        this.result = result;
+        this.index = 0;
+        this.nodes = document.getElementsByClassName(result.className);
     }
-    removeZeroCountItems() {
+    isZeroCount() {
+        return this.result.count == 0;
+    }
+    isEqualByRule(item) {
+        if (item instanceof HLData) {
+            return compareReObjRule(this.rule, item.rule);
+        }
+        return false;
+    }
+    getSummary() {
+        let str1 = summarizeReObjRule(this.rule);
+        let str2 = "count: " + this.result.count;
+        return [str1, str2].join(", ");
+    }
+    getElement() {
+        let index = this.index;
+        let nodes = this.nodes;
+        let count = this.result.count;
+
+        let containerElem = document.createElement("span");
+        containerElem.classList.add(LABEL.classSP);
+
+        let bannerElem = document.createElement("a");
+        bannerElem.style.backgroundColor = this.rule.color;
+        bannerElem.innerText = this.getSummary();
+        if (this.rule.link && this.rule.link.length) {
+            bannerElem.href = this.rule.link;
+        }
+        containerElem.appendChild(bannerElem);
+
+        let minusElem = document.createElement("button");
+        minusElem.innerText = "-";
+        minusElem.onclick = () => {
+            index--;
+            if (index < 0) {
+                index = count;
+            }
+            indexElem.innerText = index;
+            nodes[index - 1].scrollIntoViewIfNeeded(true);
+        };
+        containerElem.appendChild(minusElem);
+        
+        let indexElem = document.createElement("span");
+        indexElem.innerText = index;
+        containerElem.appendChild(indexElem);
+        
+        let plusElem = document.createElement("button");
+        plusElem.innerText = "+";
+        plusElem.onclick = () => {
+            index++;
+            if (index > count) {
+                index = 1;
+            }
+            indexElem.innerText = index;
+            nodes[index - 1].scrollIntoViewIfNeeded(true);
+        }
+        containerElem.appendChild(plusElem);
+
+        return containerElem;
+    }
+}
+
+// rules about Collapse/Expand and its corresponding results
+class CEData extends SPData {
+    constructor(rule, result) {
+        super();
+        this.rule = rule;
+        this.result = result;
+    }
+    isZeroCount() {
+        return this.result.count == 0;
+    }
+    isEqualByRule(item) {
+        if (item instanceof CEData) {
+            return (
+                compareReObjRule(this.rule.start, item.rule.end) &&
+                compareReObjRule(this.rule.end, item.rule.end)
+            );
+        }
+        return false;
+    }
+    getSummary() {
+        let str1 = "start: " + summarizeReObjRule(this.rule.start, false);
+        let str2 = "end: " + summarizeReObjRule(this.rule.end, false);
+        let str3 = "count: " + this.result.count;
+        return [str1, str2, str3].join(", ");
+    }
+}
+
+class SPDataSet extends Array {
+    removeZeroCountDatas() {
         for (let i = this.length - 1; i >= 0; i--) {
-            if (this.isZeroCount(this[i])) {
+            if (this[i].isZeroCount()) {
                 this.splice(i, 1);
             }
         }
     }
-    deuplicateItems() {
+    deuplicateDatas() {
         for (let i = 0; i < this.length; i++) {
-            for (let j = i + 1; j < this.length; j++) {
-                if (this.compareRule(this[i], this[j])) {
+            for (let j = this.length - 1; j > i; j--) {
+                if (this[i].isEqualByRule(this[j])) {
                     this.splice(j, 1);
-                    j--;
                 }
             }
         }
     }
 }
 
-// rules about Highlight text and its corresponding results
-class HLDatum extends Datum {
-    isZeroCount(item) {
-        return item.result.count == 0;
-    }
-    compareRule(item1, item2) {
-        return compareReObjRule(item1.rule, item2.rule);
-    }
-    getItemSummary(item) {
-        return JSON.stringify(item);
-    }
-}
+let HL_dataset = new SPDataSet();
+let CE_dataset = new SPDataSet();
 
-// rules about Collapse/Expand and its corresponding results
-class CEDatum extends Datum {
-    isZeroCount(item) {
-        return item.result.count == 0;
-    }
-    compareRule(item1, item2) {
-        return (
-            compareReObjRule(item1.rule.start, item2.rule.end) &&
-            compareReObjRule(item1.rule.end, item2.rule.end)
-        );
-    }
-    getItemSummary(item) {
-        return JSON.stringify(item);
-    }
-}
-
-let HL_datum = new HLDatum();
-let CE_datum = new CEDatum();
-
-async function getDatumElements(...datums) {
-    new Promise((resolve, _) => {
-        let datum = new Datum();
-        datum.concat(...datums);
-        elements = datum.map(item => {
-            return datum.getItemElement(item);
+async function getDatumElements(...datasets) {
+    return new Promise((resolve, _) => {
+        for (let dataset of datasets) {
+            dataset.removeZeroCountDatas();
+            dataset.deuplicateDatas();
+        }
+        let SP_dataset = (new SPDataSet).concat(...datasets);
+        elements = SP_dataset.map(data => {
+            return data.getElement();
         });
         resolve(elements);
     });
 }
 
 async function showElementsOnRightTop(elements) {
-    let offsetX = 10;
-    let offsetY = 10;
-    for (let elem of elements) {
-        elem.classList.add(LABEL.classSP);
-        elem.style.left = "10px";
-        elem.style.top = offset + 20 + "px";
-    }
-    return 0;
-}
-
-async function tirggerStatisticPanel() {
     return new Promise((resolve, _) => {
-        normalize();
-        debugger;
-        let offset = 20;
-        for (let item of HL_datum) {
-            let elem = HL_datum.getItemElement(item);
+        let offsetX = 10;
+        let offsetY = 10;
+        let gap = 5;
+        for (let elem of elements) {
             elem.classList.add(LABEL.classSP);
-            elem.style.left = "20px";
-            elem.style.top = offset + "px";
+            elem.style.right = offsetX + "px";
+            elem.style.top = offsetY + "px";
             document.body.appendChild(elem);
-            offset += 20;
+            offsetY += elem.offsetHeight + gap;
         }
         resolve(0);
     });
+}
+
+async function tirggerStatisticPanel() {
+    return getDatumElements(HL_dataset, CE_dataset)
+        .then(elements => {
+            return showElementsOnRightTop(elements);
+        });
 }

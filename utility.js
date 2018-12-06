@@ -30,6 +30,31 @@ function compareReObjRule(rule1, rule2) {
     return true;
 }
 
+// Summarize a rule into sting
+function summarizeReObjRule(rule, showHint = true, showLink = false, separator = "  ") {
+    let strArr = [];
+
+    let pattern = "pattern: " + rule.pattern;
+    strArr.push(pattern);
+
+    let flag = "flag: ";
+    if (rule.isRegExp) flag += "r";
+    if (rule.isCensitive) flag += "c";
+    if (rule.isMultiline) flag += "m";
+    strArr.push(flag);
+
+    if (showHint) {
+        let hint = "hint: " + rule.hint;
+        strArr.push(hint);
+    }
+
+    if (showLink) {
+        let link = "link: " + rule.link;
+        strArr.push(link);
+    }
+    return "[ " + strArr.join(separator) + " ]";
+}
+
 // See element.normalize()
 function normalize(rootNode = document) {
     if (this.done == undefined) {

@@ -276,11 +276,8 @@ async function triggerCollapseExpand() {
                     promise = promise.then(_ => {
                         return collapseExpand(rule)
                             .then(result => {
-                                CE_datum.push(
-                                    {
-                                        rule,
-                                        result,
-                                    }
+                                CE_dataset.push(
+                                    new CEData(rule, result)
                                 );
                                 return 0;
                             });

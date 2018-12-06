@@ -217,11 +217,8 @@ async function triggerHighlightText() {
                     promise = promise.then(_ => {
                         return highlightText(rule)
                             .then(result => {
-                                HL_datum.push(
-                                    {
-                                        rule,
-                                        result,
-                                    }
+                                HL_dataset.push(
+                                    new HLData(rule, result)
                                 );
                                 return 0;
                             });
