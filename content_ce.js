@@ -266,7 +266,6 @@ async function collapseExpandRestNodes(startColor = "lime", endColor = "green", 
 // Read all rules from local storage, and apply them to collapse and expand text.
 async function triggerCollapseExpand() {
     return new Promise((resolve, _) => {
-        normalize();
         chrome.storage.local.get(
             { collapseExpandRules: [] },
             result => {

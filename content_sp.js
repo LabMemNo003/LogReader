@@ -5,7 +5,9 @@ class SPData {
     getSummary() { return "[ Dummy - statistic panel ]"; }
     getElement() {
         let dummy = document.createElement("span");
+        dummy.classList.add(LABEL.classSP);
         dummy.classList.add(LABEL.classDummy);
+        dummy.classList.add(LABEL.classWhiteList);
         dummy.style.backgroundColor = "gray";
         dummy.innerText = this.getSummary();
         return dummy;
@@ -42,6 +44,7 @@ class HLData extends SPData {
 
         let containerElem = document.createElement("span");
         containerElem.classList.add(LABEL.classSP);
+        containerElem.classList.add(LABEL.classWhiteList);
 
         let bannerElem = document.createElement("a");
         bannerElem.style.backgroundColor = this.rule.color;
@@ -118,7 +121,7 @@ class CEData extends SPData {
     isEqualByRule(item) {
         if (item instanceof CEData) {
             return (
-                compareReObjRule(this.rule.start, item.rule.end) &&
+                compareReObjRule(this.rule.start, item.rule.start) &&
                 compareReObjRule(this.rule.end, item.rule.end)
             );
         }
@@ -151,8 +154,12 @@ class SPDataSet extends Array {
     }
 }
 
-let HL_dataset = new SPDataSet();
-let CE_dataset = new SPDataSet();
+let HL_dataset;
+let CE_dataset;
+function SP_initialize() {
+    HL_dataset = new SPDataSet();
+    CE_dataset = new SPDataSet();
+}
 
 async function getDatumElements(...datasets) {
     return new Promise((resolve, _) => {

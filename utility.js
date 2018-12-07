@@ -54,11 +54,3 @@ function summarizeReObjRule(rule, showHint = true, showLink = false, separator =
     }
     return "[ " + strArr.join(separator) + " ]";
 }
-
-// See element.normalize()
-function normalize(rootNode = document) {
-    if (this.done == undefined) {
-        this.done = true;
-        rootNode.normalize();
-    }
-}

@@ -13,3 +13,4 @@
 - [ ] M: Add URL filters to select rules to be executed - 2018/12/06
 - [ ] M: Improve the performance about statistic panel - 2018/12/07
 - [ ] H: Documnetation - 2018/12/07
+- [ ] P: Process log during during its loading phase - 2018/12/07

@@ -206,7 +206,6 @@ async function highlightText({ reObj, color = "yellow", hint = undefined, link =
 // Read all rules from local storage, and apply them to highlight the text.
 async function triggerHighlightText() {
     return new Promise((resolve, _) => {
-        normalize();
         chrome.storage.local.get(
             { highlightRules: [] },
             result => {
