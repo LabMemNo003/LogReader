@@ -58,7 +58,7 @@ class HLData extends SPData {
                 nodes[index - 1].style.fontWeight = "normal";
             }
             index--;
-            if (index < 0) {
+            if (index < 1) {
                 index = count;
             }
             indexElem.innerText = index;
