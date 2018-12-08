@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Log Reader",
-    "version": "1.2.4",
+    "version": "1.2.5",
     "description": "Log Reader",
     "permissions": [
         "activeTab",

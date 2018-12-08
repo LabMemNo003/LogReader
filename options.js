@@ -9,6 +9,7 @@ chrome.storage.onChanged.addListener(() => {
 // Export or import rules.
 // ----------------------------------------------------------------------------
 let buttonImport = document.getElementById("import");
+let buttomReset = document.getElementById("reset");
 let textareaPortal = document.getElementById("portal");
 
 buttonImport.onclick = () => {
@@ -24,7 +25,13 @@ buttonImport.onclick = () => {
             collapseExpandRules,
         }
     );
-}
+};
+
+buttomReset.onclick = () => {
+    chrome.storage.local.get("defaultRules", result => {
+        chrome.storage.local.set(result.defaultRules);
+    });
+};
 
 chrome.storage.local.get(
     {

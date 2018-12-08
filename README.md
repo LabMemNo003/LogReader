@@ -14,7 +14,8 @@
 - [ ] M: Improve the performance about statistic panel - 2018/12/07
 - [ ] H: Documnetation - 2018/12/07
 - [ ] P: Process log during during its loading phase - 2018/12/07
-- [x] H: Ctrl+F to switch between original log and processed log - 2018/12/08 - 2018/12/09
-- [ ] H: Add some default rules in extensions - 2018/12/08
+- [x] H: Ctrl+F to switch between original log and processed log - 2018/12/08~2018/12/09
+- [x] H: Implement setting or resetting default rules in extension - 2018/12/08~2018/12/09
 - [ ] L: Imigrate to TamperMonkey - 2018/12/08
 - [ ] M: When stroke Ctrl+F, switch to exactly same place in the log 2018/12/09
+- [ ] M: Add more default rules in extension - 2018/12/09
