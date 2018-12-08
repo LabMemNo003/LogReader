@@ -4,3 +4,8 @@
     background:#ccc;
     border: 1px solid;
 }
+
+.lr_sp {
+    position: fixed;
+    border: 2px solid;
+}

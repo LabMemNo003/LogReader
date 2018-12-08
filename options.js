@@ -9,6 +9,7 @@ chrome.storage.onChanged.addListener(() => {
 // Export or import rules.
 // ----------------------------------------------------------------------------
 let buttonImport = document.getElementById("import");
+let buttomReset = document.getElementById("reset");
 let textareaPortal = document.getElementById("portal");
 
 buttonImport.onclick = () => {
@@ -24,7 +25,13 @@ buttonImport.onclick = () => {
             collapseExpandRules,
         }
     );
-}
+};
+
+buttomReset.onclick = () => {
+    chrome.storage.local.get("defaultRules", result => {
+        chrome.storage.local.set(result.defaultRules);
+    });
+};
 
 chrome.storage.local.get(
     {
@@ -51,7 +58,7 @@ let hl_tableRules = document.getElementById("hl_rules");
     for (let head of heads) {
         let th = document.createElement("th");
         th.style.scope
-        th.innerHTML = head;
+        th.innerText = head;
         tr.appendChild(th);
     }
     thead.appendChild(tr);
@@ -79,7 +86,7 @@ let hl_tableRules = document.getElementById("hl_rules");
                     let key = keys[col];
                     let td = document.createElement("td");
                     let button = document.createElement("button");
-                    button.innerHTML = rule[key];
+                    button.innerText = rule[key];
                     button.id = "index_" + row + "_" + col;
                     button.onclick = event => {
                         let [_, row, col] = event.target.id.split("_");
@@ -96,7 +103,7 @@ let hl_tableRules = document.getElementById("hl_rules");
                 }
                 let td = document.createElement("td");
                 let button = document.createElement("button");
-                button.innerHTML = "delete";
+                button.innerText = "delete";
                 button.id = "index_" + row;
                 button.onclick = event => {
                     let [_, row] = event.target.id.split("_");
@@ -123,7 +130,7 @@ let ce_tableRules = document.getElementById("ce_rules");
     for (let head of heads) {
         let th = document.createElement("th");
         th.style.scope
-        th.innerHTML = head;
+        th.innerText = head;
         tr.appendChild(th);
     }
     thead.appendChild(tr);
@@ -162,11 +169,11 @@ let ce_tableRules = document.getElementById("ce_rules");
                         let key = keys[col];
                         let td = document.createElement("td");
                         let button = document.createElement("button");
-                        button.innerHTML = s_rule[key];
+                        button.innerText = s_rule[key];
                         button.id = "index_" + row + "_" + col;
                         button.onclick = event => {
                             let [_, row, col] = event.target.id.split("_");
-                            let input = prompt("update to:");
+                            let input = prompt("update to:", event.target.innerText);
                             if (col == 4 || col == 5 || col == 6) {
                                 if (input == "true") input = true;
                                 else if (input == "false") input = false;
@@ -179,7 +186,7 @@ let ce_tableRules = document.getElementById("ce_rules");
                     }
                     let td = document.createElement("td");
                     let button = document.createElement("button");
-                    button.innerHTML = "delete";
+                    button.innerText = "delete";
                     button.id = "index_" + row;
                     button.onclick = event => {
                         let [_, row] = event.target.id.split("_");
@@ -201,7 +208,7 @@ let ce_tableRules = document.getElementById("ce_rules");
                         let key = keys[col];
                         let td = document.createElement("td");
                         let button = document.createElement("button");
-                        button.innerHTML = e_rule[key];
+                        button.innerText = e_rule[key];
                         button.id = "index_" + row + "_" + col;
                         button.onclick = event => {
                             let [_, row, col] = event.target.id.split("_");
@@ -218,7 +225,7 @@ let ce_tableRules = document.getElementById("ce_rules");
                     }
                     let td = document.createElement("td");
                     let button = document.createElement("button");
-                    button.innerHTML = "delete";
+                    button.innerText = "delete";
                     button.id = "index_" + row;
                     button.onclick = event => {
                         let [_, row] = event.target.id.split("_");
