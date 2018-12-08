@@ -27,16 +27,19 @@ let bug_performance = (() => {
     }
 })();
 
-let innerHTMLHasSaved = false;
-let innerHTMLCopy;
+let isAtOriginalPage = true;
+let originalBodyElementHasSaved = false;
+let originalBodyElementCopy;
+let processedBodyElementHasSaved = false;
+let processedBodyElementCopy;
 function initialize() {
-    if (innerHTMLHasSaved == false) {
-        innerHTMLCopy = document.body.innerHTML;
-        innerHTMLHasSaved = true;
+    if (originalBodyElementHasSaved == false) {
+        originalBodyElementCopy = document.body.cloneNode(true);
+        originalBodyElementHasSaved = true;
     }
     else {
-        debugger;
-        document.body.innerHTML = innerHTMLCopy;
+        // debugger;
+        document.body.replaceWith(originalBodyElementCopy);
     }
     document.normalize();
 
@@ -46,19 +49,38 @@ function initialize() {
 // Trigger all trigger...functions
 async function triggerAll() {
 
-    de && bug_performance("triggerAll():");
+    // de && bug_performance("triggerAll():");
     initialize();
-    de && bug_performance("initialize():");
+    // de && bug_performance("initialize():");
     return triggerCollapseExpand()
         .then(_ => {
-            de && bug_performance("triggerCollapseExpand():");
+            // de && bug_performance("triggerCollapseExpand():");
             return triggerHighlightText();
         })
         .then(_ => {
-            de && bug_performance("triggerHighlightText():");
+            // de && bug_performance("triggerHighlightText():");
             return tirggerStatisticPanel();
         })
         .then(_ => {
-            de && bug_performance("tirggerStatisticPanel():");
+            // de && bug_performance("tirggerStatisticPanel():");
+            processedBodyElementCopy = document.body;
+            processedBodyElementHasSaved = true;
+            isAtOriginalPage = false;
         });
+}
+
+function switchPage() {
+    if (isAtOriginalPage == true) {
+        if (processedBodyElementHasSaved == true) {
+            document.body.replaceWith(processedBodyElementCopy);
+            isAtOriginalPage = false;
+        }
+        else {
+            triggerAll();
+        }
+    }
+    else {
+        document.body.replaceWith(originalBodyElementCopy);
+        isAtOriginalPage = true;
+    }
 }
