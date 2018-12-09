@@ -25,7 +25,7 @@
 - [ ] L: Allow to change precedence of rules - 2018/12/05
 - [ ] M: Add URL filters to select rules to be executed - 2018/12/06
 - [ ] M: Improve the performance about statistic panel - 2018/12/07
-- [ ] H: Documnetation - 2018/12/07
+- [x] H: Documnetation about installation - 2018/12/07~2018/12/09
 - [ ] P: Process log during during its loading phase - 2018/12/07
 - [x] H: Ctrl+F to switch between original log and processed log - 2018/12/08~2018/12/09
 - [x] H: Implement setting or resetting default rules in extension - 2018/12/08~2018/12/09
@@ -33,3 +33,4 @@
 - [ ] M: When stroke Ctrl+F, switch to exactly same place in the log 2018/12/09
 - [ ] M: Add more default rules in extension - 2018/12/09
 - [ ] M: Implement Element.scrollIntoViewIfNeeded() for firefox - 2018/12/09
+- [ ] H: Documentation about rules - 2018/12/09

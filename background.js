@@ -15,8 +15,8 @@ let defaultRules = {
     formatVersion: "1.0",
     highlightRules: [
         {
-            pattern: "warn",
-            color: "yellow",
+            pattern: "panic",
+            color: "red",
             hint: "default rule",
             link: "",
             isRegExp: true,
@@ -33,8 +33,8 @@ let defaultRules = {
             isMultiline: false,
         },
         {
-            pattern: "panic",
-            color: "red",
+            pattern: "warn",
+            color: "yellow",
             hint: "default rule",
             link: "",
             isRegExp: true,
