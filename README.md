@@ -10,6 +10,11 @@
    The extension will now be installed, and will stay until you restart Firefox.
 3. [More info](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Your_first_WebExtension)
 
+## Settings
+1. [Color Value](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value)
+2. [Regular Expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)
+
+---
 
 ## To-do list
 - [x] H: Implement highlight text (callback) - 2018/11/23~2018/11/25
