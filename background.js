@@ -9,6 +9,9 @@ chrome.runtime.onInstalled.addListener(details => {
         chrome.storage.local.set({ defaultRules });
         chrome.storage.local.set(defaultRules);
     }
+    else if (details.reason == "update") {
+        chrome.storage.local.set({ defaultRules });
+    }
 });
 
 let defaultRules = {
