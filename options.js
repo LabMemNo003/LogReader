@@ -1,384 +1,3 @@
-// ----------------------------------------------------------------------------
-// Update options ui when the stored data change.
-// ----------------------------------------------------------------------------
-// chrome.storage.onChanged.addListener(() => {
-//     document.location.reload(true);
-// });
-
-// ----------------------------------------------------------------------------
-// Export or import rules.
-// ----------------------------------------------------------------------------
-let buttonImport = document.getElementById("import");
-let buttomReset = document.getElementById("reset");
-let textareaPortal = document.getElementById("portal");
-
-buttonImport.onclick = () => {
-    let {
-        formatVersion = "0.0",
-        highlightRules = [],
-        collapseExpandRules = [],
-    } = JSON.parse(textareaPortal.value);
-    chrome.storage.local.set(
-        {
-            formatVersion,
-            highlightRules,
-            collapseExpandRules,
-        }
-    );
-};
-
-buttomReset.onclick = () => {
-    chrome.storage.local.get("defaultRules", result => {
-        chrome.storage.local.set(result.defaultRules);
-    });
-};
-
-chrome.storage.local.get(
-    {
-        formatVersion: "0.0",
-        highlightRules: [],
-        collapseExpandRules: [],
-    },
-    result => {
-        textareaPortal.value = JSON.stringify(result);
-    }
-);
-
-let colorPalette = document.createElement("input");
-{
-    colorPalette.type = "color";
-    {
-        let presetColors = document.createElement("datalist");
-        presetColors.id = "presetColors";
-        let colors = ["red", "yellow", "green"];
-        for (let color of colors) {
-            let option = document.createElement("option");
-            option.value = colorKeywordToHexValue(color);
-            presetColors.appendChild(option);
-        }
-        document.body.appendChild(presetColors);
-        colorPalette.setAttribute("list", "presetColors");
-    }
-}
-
-// ----------------------------------------------------------------------------
-// Display and operate on rules.
-// ----------------------------------------------------------------------------
-{ // Highlight Text
-    let table = document.getElementById("hl_rules");
-    let heads = ["Index", "Pattern", "Color", "Hint", "Link", "RegExp", "Censitive", "Multiline", "Delete"];
-    {
-        let thead = document.createElement("thead");
-        let tr = document.createElement("tr");
-        for (let head of heads) {
-            let th = document.createElement("th");
-            th.innerText = head;
-            tr.appendChild(th);
-        }
-        thead.appendChild(tr);
-        table.appendChild(thead);
-    }
-    {
-        let tbody = document.createElement("tbody");
-        chrome.storage.local.get(
-            { highlightRules: [] },
-            result => {
-                let rules = result.highlightRules;
-                for (let row = 0; row < rules.length; row++) {
-                    {
-                        let tr = document.createElement("tr");
-                        let td = document.createElement("td");
-                        td.colSpan = heads.length;
-                        let hr = document.createElement("hr");
-                        td.appendChild(hr);
-                        tr.appendChild(td);
-                        tbody.appendChild(tr);
-                    }
-                    {
-                        let rule = rules[row];
-                        let tr = document.createElement("tr");
-                        { // index
-                            let td_index = document.createElement("td");
-                            td_index.innerText = row;
-                            tr.appendChild(td_index);
-                        }
-                        { // pattern
-                            let td_pattern = document.createElement("td");
-                            let bt_pattern = document.createElement("button");
-                            bt_pattern.innerText = rule["pattern"];
-                            bt_pattern.onclick = event => {
-                                let target = event.target;
-                                let input = prompt("update to:", target.innerText);
-                                if (input != null) {
-                                    target.innerText = input;
-                                    let row = Number(target.parentNode.parentNode.firstChild.innerText);
-                                    rules[row]["pattern"] = input;
-                                    chrome.storage.local.set({ highlightRules: rules });
-                                }
-                            };
-                            td_pattern.appendChild(bt_pattern);
-                            tr.appendChild(td_pattern);
-                        }
-                        { // color
-                            let td_color = document.createElement("td");
-                            let input_color = colorPalette.cloneNode(true);
-                            let color = colorKeywordToHexValue(rule["color"]);
-                            if (color) input_color.value = color;
-                            else input_color.value = rule["color"];
-                            input_color.onchange = event => {
-                                let target = event.target;
-                                let row = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[row]["color"] = input_color.value;
-                                chrome.storage.local.set({ highlightRules: rules });
-                            };
-                            td_color.appendChild(input_color);
-                            tr.appendChild(td_color);
-                        }
-                        { // hint
-                            let td_hint = document.createElement("td");
-                            let bt_hint = document.createElement("button");
-                            bt_hint.innerText = rule["hint"];
-                            bt_hint.onclick = event => {
-                                let target = event.target;
-                                let input = prompt("update to:", target.innerText);
-                                if (input != null) {
-                                    target.innerText = input;
-                                    let row = Number(target.parentNode.parentNode.firstChild.innerText);
-                                    rules[row]["hint"] = input;
-                                    chrome.storage.local.set({ highlightRules: rules });
-                                }
-                            };
-                            td_hint.appendChild(bt_hint);
-                            tr.appendChild(td_hint);
-                        }
-                        { // link
-                            let td_link = document.createElement("td");
-                            let bt_link = document.createElement("button");
-                            bt_link.innerText = rule["link"];
-                            bt_link.onclick = event => {
-                                let target = event.target;
-                                let input = prompt("update to:", target.innerText);
-                                if (input != null) {
-                                    target.innerText = input;
-                                    let row = Number(target.parentNode.parentNode.firstChild.innerText);
-                                    rules[row]["link"] = input;
-                                    chrome.storage.local.set({ highlightRules: rules });
-                                }
-                            };
-                            td_link.appendChild(bt_link);
-                            tr.appendChild(td_link);
-                        }
-                        { // isRegExp
-                            let td_RegExp = document.createElement("td");
-                            let input_RegExp = document.createElement("input");
-                            input_RegExp.type = "checkbox";
-                            input_RegExp.checked = rule.isRegExp;
-                            input_RegExp.onchange = event => {
-                                let target = event.target;
-                                let row = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[row]["isRegExp"] = target.checked;
-                                chrome.storage.local.set({ highlightRules: rules });
-                            }
-                            td_RegExp.appendChild(input_RegExp);
-                            tr.appendChild(td_RegExp);
-                        }
-                        { // isCensitive
-                            let td_Censitive = document.createElement("td");
-                            let input_Censitive = document.createElement("input");
-                            input_Censitive.type = "checkbox";
-                            input_Censitive.checked = rule.isCensitive;
-                            input_Censitive.onchange = event => {
-                                let target = event.target;
-                                let row = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[row]["isCensitive"] = target.checked;
-                                chrome.storage.local.set({ highlightRules: rules });
-                            }
-                            td_Censitive.appendChild(input_Censitive);
-                            tr.appendChild(td_Censitive);
-                        }
-                        { // isMultiline
-                            let td_Multiline = document.createElement("td");
-                            let input_Multiline = document.createElement("input");
-                            input_Multiline.type = "checkbox";
-                            input_Multiline.checked = rule.isMultiline;
-                            input_Multiline.onchange = event => {
-                                let target = event.target;
-                                let row = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[row]["isMultiline"] = target.checked;
-                                chrome.storage.local.set({ highlightRules: rules });
-                            }
-                            td_Multiline.appendChild(input_Multiline);
-                            tr.appendChild(td_Multiline);
-                        }
-                        { // Delete
-                            let td_delete = document.createElement("td");
-                            let bt_delete = document.createElement("button");
-                            bt_delete.innerText = "Del";
-                            bt_delete.onclick = event => {
-                                let target = event.target;
-                                let row = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules.splice(row, 1);
-                                chrome.storage.local.set({ highlightRules: rules });
-                                target.parentNode.parentNode.previousSibling.remove();
-                                target.parentNode.parentNode.remove();
-                                let children = tbody.children;
-                                for (let i = 0; i < children.length; i++) {
-                                    children[i * 2 + 1].firstChild.innerText = i;
-                                }
-                            }
-                            td_delete.appendChild(bt_delete);
-                            tr.appendChild(td_delete);
-                        }
-                        tbody.appendChild(tr);
-                    }
-                }
-                table.appendChild(tbody);
-            }
-        );
-    }
-}
-
-{ // Collapse/Expand
-    let table = document.getElementById("ce_rules");
-    let heads = ["Index", "Start\nEnd", "Pattern", "Color", "Hint", "Link", "RegExp", "Censitive", "Multiline", "Delete"];
-    {
-        let thead = document.createElement("thead");
-        let tr = document.createElement("tr");
-        for (let head of heads) {
-            let th = document.createElement("th");
-            th.innerText = head;
-            tr.appendChild(th);
-        }
-        thead.appendChild(tr);
-        table.appendChild(thead);
-    }
-    {
-        let tbody = document.createElement("tbody");
-        chrome.storage.local.get(
-            { collapseExpandRules: [] },
-            result => {
-                let rules = result.collapseExpandRules;
-                for (let row = 0; row < rules.length; row++) {
-                    {
-                        let tr = document.createElement("tr");
-                        let td = document.createElement("td");
-                        td.colSpan = heads.length;
-                        let hr = document.createElement("hr");
-                        td.appendChild(hr);
-                        tr.appendChild(td);
-                        tbody.appendChild(tr);
-                    }
-                    {
-                        let rule = rules[row];
-                        let tr = document.createElement("tr");
-                        tbody.appendChild(tr);
-                        let td = document.createElement("td");
-                        tr.appendChild(td);
-                        
-
-                    //     let s_rule = rule.start;
-                    //     let th = document.createElement("th");
-                    //     th.innerText = "start";
-                    //     tr.appendChild(th);
-                    //     for (let col = 0; col < keys.length; col++) {
-                    //         let key = keys[col];
-                    //         let td = document.createElement("td");
-                    //         let button = document.createElement("button");
-                    //         button.innerText = s_rule[key];
-                    //         button.id = "index_" + row + "_" + col;
-                    //         button.onclick = event => {
-                    //             let [_, row, col] = event.target.id.split("_");
-                    //             let input = prompt("update to:", event.target.innerText);
-                    //             if (col == 4 || col == 5 || col == 6) {
-                    //                 if (input == "true") input = true;
-                    //                 else if (input == "false") input = false;
-                    //             }
-                    //             rules[row].start[keys[col]] = input;
-                    //             chrome.storage.local.set({ collapseExpandRules: rules });
-                    //         }
-                    //         td.appendChild(button);
-                    //         tr.appendChild(td);
-                    //     }
-                    //     let td = document.createElement("td");
-                    //     let button = document.createElement("button");
-                    //     button.innerText = "delete";
-                    //     button.id = "index_" + row;
-                    //     button.onclick = event => {
-                    //         let [_, row] = event.target.id.split("_");
-                    //         rules.splice(row, 1);
-                    //         chrome.storage.local.set({ collapseExpandRules: rules });
-                    //         document.location.reload(true);
-                    //     }
-                    //     td.appendChild(button);
-                    //     tr.appendChild(td);
-                    //     tbody.appendChild(tr);
-                    // }
-                    // {
-                    //     let tr = document.createElement("tr");
-                    //     let e_rule = rule.end;
-                    //     let th = document.createElement("th");
-                    //     th.innerText = "end";
-                    //     tr.appendChild(th);
-                    //     for (let col = 0; col < keys.length; col++) {
-                    //         let key = keys[col];
-                    //         let td = document.createElement("td");
-                    //         let button = document.createElement("button");
-                    //         button.innerText = e_rule[key];
-                    //         button.id = "index_" + row + "_" + col;
-                    //         button.onclick = event => {
-                    //             let [_, row, col] = event.target.id.split("_");
-                    //             let input = prompt("update to:", event.target.innerText);
-                    //             if (col == 4 || col == 5 || col == 6) {
-                    //                 if (input == "true") input = true;
-                    //                 else if (input == "false") input = false;
-                    //             }
-                    //             rules[row].end[keys[col]] = input;
-                    //             chrome.storage.local.set({ collapseExpandRules: rules });
-                    //         }
-                    //         td.appendChild(button);
-                    //         tr.appendChild(td);
-                    //     }
-                    //     let td = document.createElement("td");
-                    //     let button = document.createElement("button");
-                    //     button.innerText = "delete";
-                    //     button.id = "index_" + row;
-                    //     button.onclick = event => {
-                    //         let [_, row] = event.target.id.split("_");
-                    //         rules.splice(row, 1);
-                    //         chrome.storage.local.set({ collapseExpandRules: rules });
-                    //         document.location.reload(true);
-                    //     }
-                    //     td.appendChild(button);
-                    //     tr.appendChild(td);
-                    //     tbody.appendChild(tr);
-                    }
-                }
-            }
-        )
-        table.appendChild(tbody);
-    }
-}
-
-// Collapse and expand.
-// {
-//     let thead = document.createElement("thead");
-//     let tr = document.createElement("tr");
-//     let th = document.createElement("ht");
-//     tr.appendChild(th);
-//     for (let head of heads) {
-//         let th = document.createElement("th");
-//         th.style.scope
-//         th.innerText = head;
-//         tr.appendChild(th);
-//     }
-//     thead.appendChild(tr);
-//     table.appendChild(thead);
-// }
-// {
-// }
-
-
-
 function colorKeywordToHexValue(keyword) {
     let colors = {
         "black": "#000000", "silver": "#c0c0c0", "gray": "#808080", "white": "#ffffff", "maroon": "#800000",
@@ -417,3 +36,717 @@ function colorKeywordToHexValue(keyword) {
     return false;
 }
 
+let colorPalette = document.createElement("input");
+{
+    colorPalette.type = "color";
+    {
+        let presetColors = document.createElement("datalist");
+        presetColors.id = "presetColors";
+        let colors = [
+            "maroon", "red", "orange", "yellow", "green",
+            "cyan", "cornflowerblue", "blue", "purple", "magenta",
+            "limegreen", "peachpuff", "springgreen", "yellowgreen", "olivedrab",
+            "mediumorchid", "lightsteelblue", "lightslategrey", "lightseagreen", "lightcoral",
+        ];
+        for (let color of colors) {
+            let option = document.createElement("option");
+            option.value = colorKeywordToHexValue(color);
+            presetColors.appendChild(option);
+        }
+        document.body.appendChild(presetColors);
+        colorPalette.setAttribute("list", "presetColors");
+    }
+}
+
+function loadHLtable(table) { // Highlight Text
+    while (table.firstChild) {
+        table.firstChild.remove();
+    }
+    let heads = ["Index", "Pattern", "Color", "Hint", "Link", "RegExp", "Censitive", "Multiline", "Priority\nUp/Down", "Delete"];
+    {
+        let thead = document.createElement("thead");
+        let tr = document.createElement("tr");
+        for (let head of heads) {
+            let th = document.createElement("th");
+            th.innerText = head;
+            tr.appendChild(th);
+        }
+        thead.appendChild(tr);
+        table.appendChild(thead);
+    }
+    {
+        let tbody = document.createElement("tbody");
+        loadHLtbody(tbody);
+        table.appendChild(tbody);
+
+    }
+}
+
+function loadHLtbody(tbody, from_index = 0) {
+    chrome.storage.local.get(
+        { highlightRules: [] },
+        result => {
+            let rules = result.highlightRules;
+            for (let index = from_index; index < rules.length; index++) {
+                {
+                    let tr = document.createElement("tr");
+                    let td = document.createElement("td");
+                    td.colSpan = 10;
+                    let hr = document.createElement("hr");
+                    td.appendChild(hr);
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+                }
+                {
+                    let rule = rules[index];
+                    let tr = document.createElement("tr");
+                    { // index
+                        let td_index = document.createElement("td");
+                        td_index.innerText = index;
+                        tr.appendChild(td_index);
+                    }
+                    { // pattern
+                        let td_pattern = document.createElement("td");
+                        let bt_pattern = document.createElement("button");
+                        bt_pattern.innerText = rule["pattern"];
+                        bt_pattern.onclick = event => {
+                            let target = event.target;
+                            let input = prompt("update to:", target.innerText);
+                            if (input != null) {
+                                target.innerText = input;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index]["pattern"] = input;
+                                chrome.storage.local.set({ highlightRules: rules });
+                            }
+                        };
+                        td_pattern.appendChild(bt_pattern);
+                        tr.appendChild(td_pattern);
+                    }
+                    { // color
+                        let td_color = document.createElement("td");
+                        let input_color = colorPalette.cloneNode(true);
+                        let color = colorKeywordToHexValue(rule["color"]);
+                        if (color) input_color.value = color;
+                        else input_color.value = rule["color"];
+                        input_color.onchange = event => {
+                            let target = event.target;
+                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                            rules[index]["color"] = input_color.value;
+                            chrome.storage.local.set({ highlightRules: rules });
+                        };
+                        td_color.appendChild(input_color);
+                        tr.appendChild(td_color);
+                    }
+                    { // hint
+                        let td_hint = document.createElement("td");
+                        let bt_hint = document.createElement("button");
+                        bt_hint.innerText = rule["hint"];
+                        bt_hint.onclick = event => {
+                            let target = event.target;
+                            let input = prompt("update to:", target.innerText);
+                            if (input != null) {
+                                target.innerText = input;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index]["hint"] = input;
+                                chrome.storage.local.set({ highlightRules: rules });
+                            }
+                        };
+                        td_hint.appendChild(bt_hint);
+                        tr.appendChild(td_hint);
+                    }
+                    { // link
+                        let td_link = document.createElement("td");
+                        let bt_link = document.createElement("button");
+                        bt_link.innerText = rule["link"];
+                        bt_link.onclick = event => {
+                            let target = event.target;
+                            let input = prompt("update to:", target.innerText);
+                            if (input != null) {
+                                target.innerText = input;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index]["link"] = input;
+                                chrome.storage.local.set({ highlightRules: rules });
+                            }
+                        };
+                        td_link.appendChild(bt_link);
+                        tr.appendChild(td_link);
+                    }
+                    { // isRegExp
+                        let td_RegExp = document.createElement("td");
+                        let input_RegExp = document.createElement("input");
+                        input_RegExp.type = "checkbox";
+                        input_RegExp.checked = rule.isRegExp;
+                        input_RegExp.onchange = event => {
+                            let target = event.target;
+                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                            rules[index]["isRegExp"] = target.checked;
+                            chrome.storage.local.set({ highlightRules: rules });
+                        }
+                        td_RegExp.appendChild(input_RegExp);
+                        tr.appendChild(td_RegExp);
+                    }
+                    { // isCensitive
+                        let td_Censitive = document.createElement("td");
+                        let input_Censitive = document.createElement("input");
+                        input_Censitive.type = "checkbox";
+                        input_Censitive.checked = rule.isCensitive;
+                        input_Censitive.onchange = event => {
+                            let target = event.target;
+                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                            rules[index]["isCensitive"] = target.checked;
+                            chrome.storage.local.set({ highlightRules: rules });
+                        }
+                        td_Censitive.appendChild(input_Censitive);
+                        tr.appendChild(td_Censitive);
+                    }
+                    { // isMultiline
+                        let td_Multiline = document.createElement("td");
+                        let input_Multiline = document.createElement("input");
+                        input_Multiline.type = "checkbox";
+                        input_Multiline.checked = rule.isMultiline;
+                        input_Multiline.onchange = event => {
+                            let target = event.target;
+                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                            rules[index]["isMultiline"] = target.checked;
+                            chrome.storage.local.set({ highlightRules: rules });
+                        }
+                        td_Multiline.appendChild(input_Multiline);
+                        tr.appendChild(td_Multiline);
+                    }
+                    { // priority
+                        let td_priority = document.createElement("td");
+                        tr.appendChild(td_priority);
+                        { // up
+                            let bt_up = document.createElement("button");
+                            bt_up.innerText = "U";
+                            bt_up.onclick = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                if (index == 0) return;
+                                let tmp = rules[index];
+                                rules[index] = rules[index - 1];
+                                rules[index - 1] = tmp;
+                                chrome.storage.local.set({ highlightRules: rules });
+                                let tr_targ = target.parentNode.parentNode;
+                                let tr_line = tr_targ.previousSibling;
+                                tr_targ.previousSibling.previousSibling.before(tr_targ);
+                                tr_targ.after(tr_line);
+                                let children = tbody.children;
+                                for (let i = 1, j = 0; i < children.length; i += 2, j++) {
+                                    children[i].firstChild.innerText = j;
+                                }
+                            };
+                            td_priority.appendChild(bt_up);
+                        }
+                        { // down
+                            let bt_down = document.createElement("button");
+                            bt_down.innerText = "D";
+                            bt_down.onclick = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                if (index == rules.length - 1) return;
+                                let tmp = rules[index];
+                                rules[index] = rules[index + 1];
+                                rules[index + 1] = tmp;
+                                chrome.storage.local.set({ highlightRules: rules });
+                                let tr_targ = target.parentNode.parentNode;
+                                let tr_line = tr_targ.previousSibling;
+                                tr_targ.nextSibling.nextSibling.after(tr_targ);
+                                tr_targ.before(tr_line);
+                                let children = tbody.children;
+                                for (let i = 1, j = 0; i < children.length; i += 2, j++) {
+                                    children[i].firstChild.innerText = j;
+                                }
+                            };
+                            td_priority.appendChild(bt_down);
+                        }
+                    }
+                    { // Delete
+                        let td_delete = document.createElement("td");
+                        let bt_delete = document.createElement("button");
+                        bt_delete.innerText = "Del";
+                        bt_delete.onclick = event => {
+                            let target = event.target;
+                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                            rules.splice(index, 1);
+                            chrome.storage.local.set({ highlightRules: rules });
+                            target.parentNode.parentNode.previousSibling.remove();
+                            target.parentNode.parentNode.remove();
+                            let children = tbody.children;
+                            for (let i = 1, j = 0; i < children.length; i += 2, j++) {
+                                children[i].firstChild.innerText = j;
+                            }
+                        }
+                        td_delete.appendChild(bt_delete);
+                        tr.appendChild(td_delete);
+                    }
+                    tbody.appendChild(tr);
+                }
+            }
+        }
+    );
+}
+
+
+function loadCEtable(table) { // Collapse/Expand
+    while (table.firstChild) {
+        table.firstChild.remove();
+    }
+    let heads = ["Index", "Start\nEnd", "Pattern", "Color", "Hint", "Link", "RegExp", "Censitive", "Multiline", "Priority\nUp/Down", "Delete"];
+    {
+        let thead = document.createElement("thead");
+        let tr = document.createElement("tr");
+        for (let head of heads) {
+            let th = document.createElement("th");
+            th.innerText = head;
+            tr.appendChild(th);
+        }
+        thead.appendChild(tr);
+        table.appendChild(thead);
+    }
+    {
+        let tbody = document.createElement("tbody");
+        loadCEtbody(tbody);
+        table.appendChild(tbody);
+    }
+}
+
+function loadCEtbody(tbody, from_index = 0) {
+    chrome.storage.local.get(
+        { collapseExpandRules: [] },
+        result => {
+            let rules = result.collapseExpandRules;
+            for (let index = from_index; index < rules.length; index++) {
+                {
+                    let tr = document.createElement("tr");
+                    let td = document.createElement("td");
+                    td.colSpan = 11;
+                    let hr = document.createElement("hr");
+                    td.appendChild(hr);
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+                }
+                {
+                    let rule = rules[index];
+                    let tr_start = document.createElement("tr");
+                    tbody.appendChild(tr_start);
+                    let tr_end = document.createElement("tr");
+                    tbody.appendChild(tr_end);
+
+                    let td_index = document.createElement("td");
+                    td_index.innerText = index;
+                    td_index.rowSpan = 2;
+                    tr_start.appendChild(td_index);
+
+
+                    {
+                        s_rule = rule.start;
+                        let td_start = document.createElement("td");
+                        td_start.innerText = "Start";
+                        tr_start.appendChild(td_start);
+                        { // pattern
+                            let td_pattern = document.createElement("td");
+                            let bt_pattern = document.createElement("button");
+                            bt_pattern.innerText = s_rule["pattern"];
+                            bt_pattern.onclick = event => {
+                                let target = event.target;
+                                let input = prompt("update to:", target.innerText);
+                                if (input != null) {
+                                    target.innerText = input;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index].start["pattern"] = input;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                }
+                            };
+                            td_pattern.appendChild(bt_pattern);
+                            tr_start.appendChild(td_pattern);
+                        }
+                        { // color
+                            let td_color = document.createElement("td");
+                            let input_color = colorPalette.cloneNode(true);
+                            let color = colorKeywordToHexValue(s_rule["color"]);
+                            if (color) input_color.value = color;
+                            else input_color.value = s_rule["color"];
+                            input_color.onchange = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index].start["color"] = input_color.value;
+                                chrome.storage.local.set({ collapseExpandRules: rules });
+                            };
+                            td_color.appendChild(input_color);
+                            tr_start.appendChild(td_color);
+                        }
+                        { // hint
+                            let td_hint = document.createElement("td");
+                            let bt_hint = document.createElement("button");
+                            bt_hint.innerText = s_rule["hint"];
+                            bt_hint.onclick = event => {
+                                let target = event.target;
+                                let input = prompt("update to:", target.innerText);
+                                if (input != null) {
+                                    target.innerText = input;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index].start["hint"] = input;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                }
+                            };
+                            td_hint.appendChild(bt_hint);
+                            tr_start.appendChild(td_hint);
+                        }
+                        { // link
+                            let td_link = document.createElement("td");
+                            let bt_link = document.createElement("button");
+                            bt_link.innerText = s_rule["link"];
+                            bt_link.onclick = event => {
+                                let target = event.target;
+                                let input = prompt("update to:", target.innerText);
+                                if (input != null) {
+                                    target.innerText = input;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index].start["link"] = input;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                }
+                            };
+                            td_link.appendChild(bt_link);
+                            tr_start.appendChild(td_link);
+                        }
+                        { // isRegExp
+                            let td_RegExp = document.createElement("td");
+                            let input_RegExp = document.createElement("input");
+                            input_RegExp.type = "checkbox";
+                            input_RegExp.checked = s_rule.isRegExp;
+                            input_RegExp.onchange = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index].start["isRegExp"] = target.checked;
+                                chrome.storage.local.set({ collapseExpandRules: rules });
+                            }
+                            td_RegExp.appendChild(input_RegExp);
+                            tr_start.appendChild(td_RegExp);
+                        }
+                        { // isCensitive
+                            let td_Censitive = document.createElement("td");
+                            let input_Censitive = document.createElement("input");
+                            input_Censitive.type = "checkbox";
+                            input_Censitive.checked = s_rule.isCensitive;
+                            input_Censitive.onchange = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index].start["isCensitive"] = target.checked;
+                                chrome.storage.local.set({ collapseExpandRules: rules });
+                            }
+                            td_Censitive.appendChild(input_Censitive);
+                            tr_start.appendChild(td_Censitive);
+                        }
+                        { // isMultiline
+                            let td_Multiline = document.createElement("td");
+                            let input_Multiline = document.createElement("input");
+                            input_Multiline.type = "checkbox";
+                            input_Multiline.checked = s_rule.isMultiline;
+                            input_Multiline.onchange = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index].start["isMultiline"] = target.checked;
+                                chrome.storage.local.set({ collapseExpandRules: rules });
+                            }
+                            td_Multiline.appendChild(input_Multiline);
+                            tr_start.appendChild(td_Multiline);
+                        }
+                        { // priority
+                            let td_priority = document.createElement("td");
+                            td_priority.rowSpan = 2;
+                            tr_start.appendChild(td_priority);
+                            { // up
+                                let bt_up = document.createElement("button");
+                                bt_up.innerText = "U";
+                                bt_up.onclick = event => {
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    if (index == 0) return;
+                                    let tmp = rules[index];
+                                    rules[index] = rules[index - 1];
+                                    rules[index - 1] = tmp;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                    let tr_start = target.parentNode.parentNode;
+                                    let tr_end = tr_start.nextSibling;
+                                    let tr_line = tr_start.previousSibling;
+                                    tr_start.previousSibling.previousSibling.previousSibling.before(tr_start);
+                                    tr_start.after(tr_end);
+                                    tr_end.after(tr_line);
+                                    let children = tbody.children;
+                                    for (let i = 1, j = 0; i < children.length; i += 3, j++) {
+                                        children[i].firstChild.innerText = j;
+                                    }
+                                };
+                                td_priority.appendChild(bt_up);
+                            }
+                            { // down
+                                let bt_down = document.createElement("button");
+                                bt_down.innerText = "D";
+                                bt_down.onclick = event => {
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    if (index == rules.length - 1) return;
+                                    let tmp = rules[index];
+                                    rules[index] = rules[index + 1];
+                                    rules[index + 1] = tmp;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                    let tr_start = target.parentNode.parentNode;
+                                    let tr_end = tr_start.nextSibling;
+                                    let tr_line = tr_start.previousSibling;
+                                    tr_start.nextSibling.nextSibling.nextSibling.nextSibling.after(tr_start);
+                                    tr_start.after(tr_end);
+                                    tr_start.before(tr_line);
+                                    let children = tbody.children;
+                                    for (let i = 1, j = 0; i < children.length; i += 3, j++) {
+                                        children[i].firstChild.innerText = j;
+                                    }
+                                };
+                                td_priority.appendChild(bt_down);
+                            }
+                        }
+                        { // Delete
+                            let td_delete = document.createElement("td");
+                            td_delete.rowSpan = 2;
+                            let bt_delete = document.createElement("button");
+                            bt_delete.innerText = "Del";
+                            bt_delete.onclick = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules.splice(index, 1);
+                                chrome.storage.local.set({ collapseExpandRules: rules });
+                                target.parentNode.parentNode.previousSibling.remove();
+                                target.parentNode.parentNode.nextSibling.remove();
+                                target.parentNode.parentNode.remove();
+                                let children = tbody.children;
+                                for (let i = 1, j = 0; i < children.length; i += 3, j++) {
+                                    children[i].firstChild.innerText = j;
+                                }
+                            }
+                            td_delete.appendChild(bt_delete);
+                            tr_start.appendChild(td_delete);
+                        }
+                    }
+                    {
+                        e_rule = rule.end;
+                        let td_end = document.createElement("td");
+                        td_end.innerText = "End";
+                        tr_end.appendChild(td_end);
+                        { // pattern
+                            let td_pattern = document.createElement("td");
+                            let bt_pattern = document.createElement("button");
+                            bt_pattern.innerText = e_rule["pattern"];
+                            bt_pattern.onclick = event => {
+                                let target = event.target;
+                                let input = prompt("update to:", target.innerText);
+                                if (input != null) {
+                                    target.innerText = input;
+                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                    rules[index].end["pattern"] = input;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                }
+                            };
+                            td_pattern.appendChild(bt_pattern);
+                            tr_end.appendChild(td_pattern);
+                        }
+                        { // color
+                            let td_color = document.createElement("td");
+                            let input_color = colorPalette.cloneNode(true);
+                            let color = colorKeywordToHexValue(e_rule["color"]);
+                            if (color) input_color.value = color;
+                            else input_color.value = e_rule["color"];
+                            input_color.onchange = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                rules[index].end["color"] = input_color.value;
+                                chrome.storage.local.set({ collapseExpandRules: rules });
+                            };
+                            td_color.appendChild(input_color);
+                            tr_end.appendChild(td_color);
+                        }
+                        { // hint
+                            let td_hint = document.createElement("td");
+                            let bt_hint = document.createElement("button");
+                            bt_hint.innerText = e_rule["hint"];
+                            bt_hint.onclick = event => {
+                                let target = event.target;
+                                let input = prompt("update to:", target.innerText);
+                                if (input != null) {
+                                    target.innerText = input;
+                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                    rules[index].end["hint"] = input;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                }
+                            };
+                            td_hint.appendChild(bt_hint);
+                            tr_end.appendChild(td_hint);
+                        }
+                        { // link
+                            let td_link = document.createElement("td");
+                            let bt_link = document.createElement("button");
+                            bt_link.innerText = e_rule["link"];
+                            bt_link.onclick = event => {
+                                let target = event.target;
+                                let input = prompt("update to:", target.innerText);
+                                if (input != null) {
+                                    target.innerText = input;
+                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                    rules[index].end["link"] = input;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                }
+                            };
+                            td_link.appendChild(bt_link);
+                            tr_end.appendChild(td_link);
+                        }
+                        { // isRegExp
+                            let td_RegExp = document.createElement("td");
+                            let input_RegExp = document.createElement("input");
+                            input_RegExp.type = "checkbox";
+                            input_RegExp.checked = e_rule.isRegExp;
+                            input_RegExp.onchange = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                rules[index].end["isRegExp"] = target.checked;
+                                chrome.storage.local.set({ collapseExpandRules: rules });
+                            }
+                            td_RegExp.appendChild(input_RegExp);
+                            tr_end.appendChild(td_RegExp);
+                        }
+                        { // isCensitive
+                            let td_Censitive = document.createElement("td");
+                            let input_Censitive = document.createElement("input");
+                            input_Censitive.type = "checkbox";
+                            input_Censitive.checked = e_rule.isCensitive;
+                            input_Censitive.onchange = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                rules[index].end["isCensitive"] = target.checked;
+                                chrome.storage.local.set({ collapseExpandRules: rules });
+                            }
+                            td_Censitive.appendChild(input_Censitive);
+                            tr_end.appendChild(td_Censitive);
+                        }
+                        { // isMultiline
+                            let td_Multiline = document.createElement("td");
+                            let input_Multiline = document.createElement("input");
+                            input_Multiline.type = "checkbox";
+                            input_Multiline.checked = e_rule.isMultiline;
+                            input_Multiline.onchange = event => {
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                rules[index].end["isMultiline"] = target.checked;
+                                chrome.storage.local.set({ collapseExpandRules: rules });
+                            }
+                            td_Multiline.appendChild(input_Multiline);
+                            tr_end.appendChild(td_Multiline);
+                        }
+                    }
+                }
+            }
+        }
+    );
+}
+
+loadHLtable(document.getElementById("hl_rules"));
+loadCEtable(document.getElementById("ce_rules"));
+
+let buttonExport = document.getElementById("export");
+let buttonImport = document.getElementById("import");
+let buttonAppend = document.getElementById("append");
+let buttonReset = document.getElementById("reset");
+let textareaPortal = document.getElementById("portal");
+
+buttonExport.onclick = () => {
+    chrome.storage.local.get(
+        {
+            formatVersion: "0.0",
+            highlightRules: [],
+            collapseExpandRules: [],
+        },
+        result => {
+            textareaPortal.value = JSON.stringify(result);
+        }
+    );
+};
+
+buttonImport.onclick = () => {
+    let {
+        formatVersion = "0.0",
+        highlightRules = [],
+        collapseExpandRules = [],
+    } = JSON.parse(textareaPortal.value);
+    chrome.storage.local.set(
+        {
+            formatVersion,
+            highlightRules,
+            collapseExpandRules,
+        }
+    );
+    loadHLtable(document.getElementById("hl_rules"));
+    loadCEtable(document.getElementById("ce_rules"));
+};
+
+buttonAppend.onclick = () => {
+    let {
+        formatVersion = "0.0",
+        highlightRules = [],
+        collapseExpandRules = [],
+    } = JSON.parse(textareaPortal.value);
+    chrome.storage.local.get(
+        {
+            formatVersion: "0.0",
+            highlightRules: [],
+            collapseExpandRules: [],
+        },
+        result => {
+            let hl_length = result.highlightRules.length;
+            result.highlightRules = result.highlightRules.concat(highlightRules);
+            let ce_length = result.collapseExpandRules.length;
+            result.collapseExpandRules = result.collapseExpandRules.concat(collapseExpandRules);
+            chrome.storage.local.set(result);
+            let hl_table = document.getElementById("hl_rules");
+            let hl_tbody = hl_table.lastChild;
+            loadHLtbody(hl_tbody, hl_length);
+            let ce_table = document.getElementById("ce_rules");
+            let ce_tbody = ce_table.lastChild;
+            loadCEtbody(ce_tbody, ce_length);
+        }
+    );
+};
+
+buttonReset.onclick = () => {
+    chrome.storage.local.get("defaultRules", result => {
+        chrome.storage.local.set(result.defaultRules);
+        loadHLtable(document.getElementById("hl_rules"));
+        loadCEtable(document.getElementById("ce_rules"));
+    });
+};
+
+chrome.storage.onChanged.addListener(function (changes, namespace) {
+    for (key in changes) {
+        var storageChange = changes[key];
+        console.log('Storage key "%s" in namespace "%s" changed. ' +
+            'Old value was "%s", new value is "%s".',
+            key,
+            namespace,
+            storageChange.oldValue,
+            storageChange.newValue);
+    }
+    for (key in changes) {
+        var storageChange = changes[key];
+        if (namespace == "local") {
+            if (key == "hl_rule_add" && storageChange.newValue) {
+                let hl_table = document.getElementById("hl_rules");
+                let hl_tbody = hl_table.lastChild;
+                loadHLtbody(hl_tbody, storageChange.newValue - 1);
+                chrome.storage.local.set({ hl_rule_add: 0 });
+            }
+            else if (key == "ce_rule_add" && storageChange.newValue) {
+                let ce_table = document.getElementById("ce_rules");
+                let ce_tbody = ce_table.lastChild;
+                loadCEtbody(ce_tbody, storageChange.newValue - 1);
+                chrome.storage.local.set({ ce_rule_add: 0 });
+            }
+        }
+    }
+});

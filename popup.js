@@ -67,9 +67,10 @@ hl_buttonAdd.onclick = () => {
                 }
             );
             chrome.storage.local.set({ highlightRules: result.highlightRules });
+            chrome.storage.local.set({ hl_rule_add: result.highlightRules.length });
         }
-    )
-}
+    );
+};
 
 // Clean the cached information.
 hl_buttonClean.onclick = () => {
@@ -217,9 +218,10 @@ ce_buttonAdd.onclick = () => {
                 }
             );
             chrome.storage.local.set({ collapseExpandRules: result.collapseExpandRules });
+            chrome.storage.local.set({ ce_rule_add: result.collapseExpandRules.length });
         }
-    )
-}
+    );
+};
 
 // Clean the cached information.
 ce_buttonClean.onclick = () => {

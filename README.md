@@ -21,8 +21,8 @@
 - [x] H: Documnetation about installation - 2018/12/07~2018/12/09
 - [x] H: Ctrl+F to switch between original log and processed log - 2018/12/08~2018/12/09
 - [x] H: Implement setting or resetting default rules in extension - 2018/12/08~2018/12/09
-- [ ] H: Dynamically update web page instead of reloading it - 2018/12/05
-- [ ] H: Allow to change precedence of rules - 2018/12/05
+- [x] H: Dynamically update web page instead of reloading it - 2018/12/05~2018/12/11
+- [x] H: Allow to change precedence of rules - 2018/12/05~2018/12/11
 - [ ] H: Use `<input type="color">` to choose color - 2018/12/05
 - [ ] H: Documentation about rules - 2018/12/09
 - [ ] M: Add URL filters to select rules to be executed - 2018/12/06
