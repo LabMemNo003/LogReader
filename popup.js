@@ -9,7 +9,6 @@ let hl_checkboxRegExp = document.getElementById("hl_regexp");
 let hl_checkboxCensitive = document.getElementById("hl_censitive");
 let hl_checkboxMultiline = document.getElementById("hl_multiline");
 let hl_buttonAdd = document.getElementById("hl_add");
-// let hl_buttonTrigger = document.getElementById("hl_trigger");
 let hl_buttonClean = document.getElementById("hl_clean");
 
 // Restore filled information in elements from local storage.
@@ -95,11 +94,6 @@ hl_buttonClean.onclick = () => {
     );
 };
 
-// Highlight text by trigger corresponding function in content.js
-// hl_buttonTrigger.onclick = () => {
-//     chrome.tabs.executeScript({ code: 'triggerHighlightText();' });
-// };
-
 // ----------------------------------------------------------------------------
 // Collapse and Expand
 // ----------------------------------------------------------------------------
@@ -118,7 +112,6 @@ let cee_checkboxRegExp = document.getElementById("cee_regexp");
 let cee_checkboxCensitive = document.getElementById("cee_censitive");
 let cee_checkboxMultiline = document.getElementById("cee_multiline");
 let ce_buttonAdd = document.getElementById("ce_add");
-// let ce_buttonTrigger = document.getElementById("ce_trigger");
 let ce_buttonClean = document.getElementById("ce_clean");
 
 // Restore filled information in elements from local storage.
@@ -261,11 +254,6 @@ ce_buttonClean.onclick = () => {
         }
     );
 };
-
-// Process text by trigger corresponding function in content.js
-// ce_buttonTrigger.onclick = () => {
-//     chrome.tabs.executeScript({ code: 'triggerCollapseExpand();' });
-// };
 
 // ----------------------------------------------------------------------------
 // Trigger all
