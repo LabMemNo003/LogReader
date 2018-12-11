@@ -23,7 +23,7 @@
 - [x] H: Implement setting or resetting default rules in extension - 2018/12/08~2018/12/09
 - [x] H: Dynamically update web page instead of reloading it - 2018/12/05~2018/12/11
 - [x] H: Allow to change precedence of rules - 2018/12/05~2018/12/11
-- [ ] H: Use `<input type="color">` to choose color - 2018/12/05
+- [x] H: Use `<input type="color">` to choose color - 2018/12/05
 - [ ] H: Documentation about rules - 2018/12/09
 - [ ] M: Add URL filters to select rules to be executed - 2018/12/06
 - [ ] M: Improve the performance about statistic panel - 2018/12/07

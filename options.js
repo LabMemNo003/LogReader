@@ -121,14 +121,17 @@ function loadHLtbody(tbody, from_index = 0) {
                         let bt_pattern = document.createElement("button");
                         bt_pattern.innerText = rule["pattern"];
                         bt_pattern.onclick = event => {
-                            let target = event.target;
-                            let input = prompt("update to:", target.innerText);
-                            if (input != null) {
-                                target.innerText = input;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[index]["pattern"] = input;
-                                chrome.storage.local.set({ highlightRules: rules });
-                            }
+                            chrome.storage.local.get({ highlightRules: [] }, result => {
+                                let rules = result.highlightRules;
+                                let target = event.target;
+                                let input = prompt("update to:", target.innerText);
+                                if (input != null) {
+                                    target.innerText = input;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index]["pattern"] = input;
+                                    chrome.storage.local.set({ highlightRules: rules });
+                                }
+                            });
                         };
                         td_pattern.appendChild(bt_pattern);
                         tr.appendChild(td_pattern);
@@ -153,19 +156,25 @@ function loadHLtbody(tbody, from_index = 0) {
                         }
 
                         input_color.onchange = event => {
-                            let target = event.target;
-                            select.value = target.value;
-                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                            rules[index]["color"] = target.value;
-                            chrome.storage.local.set({ highlightRules: rules });
+                            chrome.storage.local.get({ highlightRules: [] }, result => {
+                                let rules = result.highlightRules;
+                                let target = event.target;
+                                select.value = target.value;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index]["color"] = target.value;
+                                chrome.storage.local.set({ highlightRules: rules });
+                            });
                         };
 
                         select.onchange = event => {
-                            let target = event.target;
-                            input_color.value = target.value;
-                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                            rules[index]["color"] = target.value;
-                            chrome.storage.local.set({ highlightRules: rules });
+                            chrome.storage.local.get({ highlightRules: [] }, result => {
+                                let rules = result.highlightRules;
+                                let target = event.target;
+                                input_color.value = target.value;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index]["color"] = target.value;
+                                chrome.storage.local.set({ highlightRules: rules });
+                            });
                         };
                     }
                     { // hint
@@ -173,14 +182,17 @@ function loadHLtbody(tbody, from_index = 0) {
                         let bt_hint = document.createElement("button");
                         bt_hint.innerText = rule["hint"];
                         bt_hint.onclick = event => {
-                            let target = event.target;
-                            let input = prompt("update to:", target.innerText);
-                            if (input != null) {
-                                target.innerText = input;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[index]["hint"] = input;
-                                chrome.storage.local.set({ highlightRules: rules });
-                            }
+                            chrome.storage.local.get({ highlightRules: [] }, result => {
+                                let rules = result.highlightRules;
+                                let target = event.target;
+                                let input = prompt("update to:", target.innerText);
+                                if (input != null) {
+                                    target.innerText = input;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index]["hint"] = input;
+                                    chrome.storage.local.set({ highlightRules: rules });
+                                }
+                            });
                         };
                         td_hint.appendChild(bt_hint);
                         tr.appendChild(td_hint);
@@ -190,14 +202,17 @@ function loadHLtbody(tbody, from_index = 0) {
                         let bt_link = document.createElement("button");
                         bt_link.innerText = rule["link"];
                         bt_link.onclick = event => {
-                            let target = event.target;
-                            let input = prompt("update to:", target.innerText);
-                            if (input != null) {
-                                target.innerText = input;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[index]["link"] = input;
-                                chrome.storage.local.set({ highlightRules: rules });
-                            }
+                            chrome.storage.local.get({ highlightRules: [] }, result => {
+                                let rules = result.highlightRules;
+                                let target = event.target;
+                                let input = prompt("update to:", target.innerText);
+                                if (input != null) {
+                                    target.innerText = input;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index]["link"] = input;
+                                    chrome.storage.local.set({ highlightRules: rules });
+                                }
+                            });
                         };
                         td_link.appendChild(bt_link);
                         tr.appendChild(td_link);
@@ -208,10 +223,13 @@ function loadHLtbody(tbody, from_index = 0) {
                         input_RegExp.type = "checkbox";
                         input_RegExp.checked = rule.isRegExp;
                         input_RegExp.onchange = event => {
-                            let target = event.target;
-                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                            rules[index]["isRegExp"] = target.checked;
-                            chrome.storage.local.set({ highlightRules: rules });
+                            chrome.storage.local.get({ highlightRules: [] }, result => {
+                                let rules = result.highlightRules;
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index]["isRegExp"] = target.checked;
+                                chrome.storage.local.set({ highlightRules: rules });
+                            });
                         }
                         td_RegExp.appendChild(input_RegExp);
                         tr.appendChild(td_RegExp);
@@ -222,10 +240,13 @@ function loadHLtbody(tbody, from_index = 0) {
                         input_Censitive.type = "checkbox";
                         input_Censitive.checked = rule.isCensitive;
                         input_Censitive.onchange = event => {
-                            let target = event.target;
-                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                            rules[index]["isCensitive"] = target.checked;
-                            chrome.storage.local.set({ highlightRules: rules });
+                            chrome.storage.local.get({ highlightRules: [] }, result => {
+                                let rules = result.highlightRules;
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index]["isCensitive"] = target.checked;
+                                chrome.storage.local.set({ highlightRules: rules });
+                            });
                         }
                         td_Censitive.appendChild(input_Censitive);
                         tr.appendChild(td_Censitive);
@@ -236,10 +257,13 @@ function loadHLtbody(tbody, from_index = 0) {
                         input_Multiline.type = "checkbox";
                         input_Multiline.checked = rule.isMultiline;
                         input_Multiline.onchange = event => {
-                            let target = event.target;
-                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                            rules[index]["isMultiline"] = target.checked;
-                            chrome.storage.local.set({ highlightRules: rules });
+                            chrome.storage.local.get({ highlightRules: [] }, result => {
+                                let rules = result.highlightRules;
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules[index]["isMultiline"] = target.checked;
+                                chrome.storage.local.set({ highlightRules: rules });
+                            });
                         }
                         td_Multiline.appendChild(input_Multiline);
                         tr.appendChild(td_Multiline);
@@ -251,21 +275,24 @@ function loadHLtbody(tbody, from_index = 0) {
                             let bt_up = document.createElement("button");
                             bt_up.innerText = "U";
                             bt_up.onclick = event => {
-                                let target = event.target;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                if (index == 0) return;
-                                let tmp = rules[index];
-                                rules[index] = rules[index - 1];
-                                rules[index - 1] = tmp;
-                                chrome.storage.local.set({ highlightRules: rules });
-                                let tr_targ = target.parentNode.parentNode;
-                                let tr_line = tr_targ.previousSibling;
-                                tr_targ.previousSibling.previousSibling.before(tr_targ);
-                                tr_targ.after(tr_line);
-                                let children = tbody.children;
-                                for (let i = 1, j = 0; i < children.length; i += 2, j++) {
-                                    children[i].firstChild.innerText = j;
-                                }
+                                chrome.storage.local.get({ highlightRules: [] }, result => {
+                                    let rules = result.highlightRules;
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    if (index == 0) return;
+                                    let tmp = rules[index];
+                                    rules[index] = rules[index - 1];
+                                    rules[index - 1] = tmp;
+                                    chrome.storage.local.set({ highlightRules: rules });
+                                    let tr_targ = target.parentNode.parentNode;
+                                    let tr_line = tr_targ.previousSibling;
+                                    tr_targ.previousSibling.previousSibling.before(tr_targ);
+                                    tr_targ.after(tr_line);
+                                    let children = tbody.children;
+                                    for (let i = 1, j = 0; i < children.length; i += 2, j++) {
+                                        children[i].firstChild.innerText = j;
+                                    }
+                                });
                             };
                             td_priority.appendChild(bt_up);
                         }
@@ -273,21 +300,24 @@ function loadHLtbody(tbody, from_index = 0) {
                             let bt_down = document.createElement("button");
                             bt_down.innerText = "D";
                             bt_down.onclick = event => {
-                                let target = event.target;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                if (index == rules.length - 1) return;
-                                let tmp = rules[index];
-                                rules[index] = rules[index + 1];
-                                rules[index + 1] = tmp;
-                                chrome.storage.local.set({ highlightRules: rules });
-                                let tr_targ = target.parentNode.parentNode;
-                                let tr_line = tr_targ.previousSibling;
-                                tr_targ.nextSibling.nextSibling.after(tr_targ);
-                                tr_targ.before(tr_line);
-                                let children = tbody.children;
-                                for (let i = 1, j = 0; i < children.length; i += 2, j++) {
-                                    children[i].firstChild.innerText = j;
-                                }
+                                chrome.storage.local.get({ highlightRules: [] }, result => {
+                                    let rules = result.highlightRules;
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    if (index == rules.length - 1) return;
+                                    let tmp = rules[index];
+                                    rules[index] = rules[index + 1];
+                                    rules[index + 1] = tmp;
+                                    chrome.storage.local.set({ highlightRules: rules });
+                                    let tr_targ = target.parentNode.parentNode;
+                                    let tr_line = tr_targ.previousSibling;
+                                    tr_targ.nextSibling.nextSibling.after(tr_targ);
+                                    tr_targ.before(tr_line);
+                                    let children = tbody.children;
+                                    for (let i = 1, j = 0; i < children.length; i += 2, j++) {
+                                        children[i].firstChild.innerText = j;
+                                    }
+                                });
                             };
                             td_priority.appendChild(bt_down);
                         }
@@ -297,17 +327,20 @@ function loadHLtbody(tbody, from_index = 0) {
                         let bt_delete = document.createElement("button");
                         bt_delete.innerText = "Del";
                         bt_delete.onclick = event => {
-                            let target = event.target;
-                            let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                            rules.splice(index, 1);
-                            chrome.storage.local.set({ highlightRules: rules });
-                            target.parentNode.parentNode.previousSibling.remove();
-                            target.parentNode.parentNode.remove();
-                            let children = tbody.children;
-                            for (let i = 1, j = 0; i < children.length; i += 2, j++) {
-                                children[i].firstChild.innerText = j;
-                            }
-                        }
+                            chrome.storage.local.get({ highlightRules: [] }, result => {
+                                let rules = result.highlightRules;
+                                let target = event.target;
+                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                rules.splice(index, 1);
+                                chrome.storage.local.set({ highlightRules: rules });
+                                target.parentNode.parentNode.previousSibling.remove();
+                                target.parentNode.parentNode.remove();
+                                let children = tbody.children;
+                                for (let i = 1, j = 0; i < children.length; i += 2, j++) {
+                                    children[i].firstChild.innerText = j;
+                                }
+                            });
+                        };
                         td_delete.appendChild(bt_delete);
                         tr.appendChild(td_delete);
                     }
@@ -379,14 +412,17 @@ function loadCEtbody(tbody, from_index = 0) {
                             let bt_pattern = document.createElement("button");
                             bt_pattern.innerText = s_rule["pattern"];
                             bt_pattern.onclick = event => {
-                                let target = event.target;
-                                let input = prompt("update to:", target.innerText);
-                                if (input != null) {
-                                    target.innerText = input;
-                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                    rules[index].start["pattern"] = input;
-                                    chrome.storage.local.set({ collapseExpandRules: rules });
-                                }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let input = prompt("update to:", target.innerText);
+                                    if (input != null) {
+                                        target.innerText = input;
+                                        let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                        rules[index].start["pattern"] = input;
+                                        chrome.storage.local.set({ collapseExpandRules: rules });
+                                    }
+                                });
                             };
                             td_pattern.appendChild(bt_pattern);
                             tr_start.appendChild(td_pattern);
@@ -411,19 +447,25 @@ function loadCEtbody(tbody, from_index = 0) {
                             }
 
                             input_color.onchange = event => {
-                                let target = event.target;
-                                select.value = target.value;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[index].start["color"] = target.value;
-                                chrome.storage.local.set({ collapseExpandRules: rules });
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    select.value = target.value;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index].start["color"] = target.value;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                });
                             };
 
                             select.onchange = event => {
-                                let target = event.target;
-                                input_color.value = target.value;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[index].start["color"] = target.value;
-                                chrome.storage.local.set({ collapseExpandRules: rules });
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    input_color.value = target.value;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index].start["color"] = target.value;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                });
                             };
                         }
                         { // hint
@@ -431,14 +473,17 @@ function loadCEtbody(tbody, from_index = 0) {
                             let bt_hint = document.createElement("button");
                             bt_hint.innerText = s_rule["hint"];
                             bt_hint.onclick = event => {
-                                let target = event.target;
-                                let input = prompt("update to:", target.innerText);
-                                if (input != null) {
-                                    target.innerText = input;
-                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                    rules[index].start["hint"] = input;
-                                    chrome.storage.local.set({ collapseExpandRules: rules });
-                                }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let input = prompt("update to:", target.innerText);
+                                    if (input != null) {
+                                        target.innerText = input;
+                                        let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                        rules[index].start["hint"] = input;
+                                        chrome.storage.local.set({ collapseExpandRules: rules });
+                                    }
+                                });
                             };
                             td_hint.appendChild(bt_hint);
                             tr_start.appendChild(td_hint);
@@ -448,14 +493,17 @@ function loadCEtbody(tbody, from_index = 0) {
                             let bt_link = document.createElement("button");
                             bt_link.innerText = s_rule["link"];
                             bt_link.onclick = event => {
-                                let target = event.target;
-                                let input = prompt("update to:", target.innerText);
-                                if (input != null) {
-                                    target.innerText = input;
-                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                    rules[index].start["link"] = input;
-                                    chrome.storage.local.set({ collapseExpandRules: rules });
-                                }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let input = prompt("update to:", target.innerText);
+                                    if (input != null) {
+                                        target.innerText = input;
+                                        let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                        rules[index].start["link"] = input;
+                                        chrome.storage.local.set({ collapseExpandRules: rules });
+                                    }
+                                });
                             };
                             td_link.appendChild(bt_link);
                             tr_start.appendChild(td_link);
@@ -466,11 +514,14 @@ function loadCEtbody(tbody, from_index = 0) {
                             input_RegExp.type = "checkbox";
                             input_RegExp.checked = s_rule.isRegExp;
                             input_RegExp.onchange = event => {
-                                let target = event.target;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[index].start["isRegExp"] = target.checked;
-                                chrome.storage.local.set({ collapseExpandRules: rules });
-                            }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index].start["isRegExp"] = target.checked;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                });
+                            };
                             td_RegExp.appendChild(input_RegExp);
                             tr_start.appendChild(td_RegExp);
                         }
@@ -480,11 +531,14 @@ function loadCEtbody(tbody, from_index = 0) {
                             input_Censitive.type = "checkbox";
                             input_Censitive.checked = s_rule.isCensitive;
                             input_Censitive.onchange = event => {
-                                let target = event.target;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[index].start["isCensitive"] = target.checked;
-                                chrome.storage.local.set({ collapseExpandRules: rules });
-                            }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index].start["isCensitive"] = target.checked;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                });
+                            };
                             td_Censitive.appendChild(input_Censitive);
                             tr_start.appendChild(td_Censitive);
                         }
@@ -494,11 +548,14 @@ function loadCEtbody(tbody, from_index = 0) {
                             input_Multiline.type = "checkbox";
                             input_Multiline.checked = s_rule.isMultiline;
                             input_Multiline.onchange = event => {
-                                let target = event.target;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules[index].start["isMultiline"] = target.checked;
-                                chrome.storage.local.set({ collapseExpandRules: rules });
-                            }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules[index].start["isMultiline"] = target.checked;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                });
+                            };
                             td_Multiline.appendChild(input_Multiline);
                             tr_start.appendChild(td_Multiline);
                         }
@@ -510,23 +567,26 @@ function loadCEtbody(tbody, from_index = 0) {
                                 let bt_up = document.createElement("button");
                                 bt_up.innerText = "U";
                                 bt_up.onclick = event => {
-                                    let target = event.target;
-                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                    if (index == 0) return;
-                                    let tmp = rules[index];
-                                    rules[index] = rules[index - 1];
-                                    rules[index - 1] = tmp;
-                                    chrome.storage.local.set({ collapseExpandRules: rules });
-                                    let tr_start = target.parentNode.parentNode;
-                                    let tr_end = tr_start.nextSibling;
-                                    let tr_line = tr_start.previousSibling;
-                                    tr_start.previousSibling.previousSibling.previousSibling.before(tr_start);
-                                    tr_start.after(tr_end);
-                                    tr_end.after(tr_line);
-                                    let children = tbody.children;
-                                    for (let i = 1, j = 0; i < children.length; i += 3, j++) {
-                                        children[i].firstChild.innerText = j;
-                                    }
+                                    chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                        let rules = result.collapseExpandRules;
+                                        let target = event.target;
+                                        let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                        if (index == 0) return;
+                                        let tmp = rules[index];
+                                        rules[index] = rules[index - 1];
+                                        rules[index - 1] = tmp;
+                                        chrome.storage.local.set({ collapseExpandRules: rules });
+                                        let tr_start = target.parentNode.parentNode;
+                                        let tr_end = tr_start.nextSibling;
+                                        let tr_line = tr_start.previousSibling;
+                                        tr_start.previousSibling.previousSibling.previousSibling.before(tr_start);
+                                        tr_start.after(tr_end);
+                                        tr_end.after(tr_line);
+                                        let children = tbody.children;
+                                        for (let i = 1, j = 0; i < children.length; i += 3, j++) {
+                                            children[i].firstChild.innerText = j;
+                                        }
+                                    });
                                 };
                                 td_priority.appendChild(bt_up);
                             }
@@ -534,23 +594,26 @@ function loadCEtbody(tbody, from_index = 0) {
                                 let bt_down = document.createElement("button");
                                 bt_down.innerText = "D";
                                 bt_down.onclick = event => {
-                                    let target = event.target;
-                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                    if (index == rules.length - 1) return;
-                                    let tmp = rules[index];
-                                    rules[index] = rules[index + 1];
-                                    rules[index + 1] = tmp;
-                                    chrome.storage.local.set({ collapseExpandRules: rules });
-                                    let tr_start = target.parentNode.parentNode;
-                                    let tr_end = tr_start.nextSibling;
-                                    let tr_line = tr_start.previousSibling;
-                                    tr_start.nextSibling.nextSibling.nextSibling.nextSibling.after(tr_start);
-                                    tr_start.after(tr_end);
-                                    tr_start.before(tr_line);
-                                    let children = tbody.children;
-                                    for (let i = 1, j = 0; i < children.length; i += 3, j++) {
-                                        children[i].firstChild.innerText = j;
-                                    }
+                                    chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                        let rules = result.collapseExpandRules;
+                                        let target = event.target;
+                                        let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                        if (index == rules.length - 1) return;
+                                        let tmp = rules[index];
+                                        rules[index] = rules[index + 1];
+                                        rules[index + 1] = tmp;
+                                        chrome.storage.local.set({ collapseExpandRules: rules });
+                                        let tr_start = target.parentNode.parentNode;
+                                        let tr_end = tr_start.nextSibling;
+                                        let tr_line = tr_start.previousSibling;
+                                        tr_start.nextSibling.nextSibling.nextSibling.nextSibling.after(tr_start);
+                                        tr_start.after(tr_end);
+                                        tr_start.before(tr_line);
+                                        let children = tbody.children;
+                                        for (let i = 1, j = 0; i < children.length; i += 3, j++) {
+                                            children[i].firstChild.innerText = j;
+                                        }
+                                    });
                                 };
                                 td_priority.appendChild(bt_down);
                             }
@@ -561,18 +624,21 @@ function loadCEtbody(tbody, from_index = 0) {
                             let bt_delete = document.createElement("button");
                             bt_delete.innerText = "Del";
                             bt_delete.onclick = event => {
-                                let target = event.target;
-                                let index = Number(target.parentNode.parentNode.firstChild.innerText);
-                                rules.splice(index, 1);
-                                chrome.storage.local.set({ collapseExpandRules: rules });
-                                target.parentNode.parentNode.previousSibling.remove();
-                                target.parentNode.parentNode.nextSibling.remove();
-                                target.parentNode.parentNode.remove();
-                                let children = tbody.children;
-                                for (let i = 1, j = 0; i < children.length; i += 3, j++) {
-                                    children[i].firstChild.innerText = j;
-                                }
-                            }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.firstChild.innerText);
+                                    rules.splice(index, 1);
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                    target.parentNode.parentNode.previousSibling.remove();
+                                    target.parentNode.parentNode.nextSibling.remove();
+                                    target.parentNode.parentNode.remove();
+                                    let children = tbody.children;
+                                    for (let i = 1, j = 0; i < children.length; i += 3, j++) {
+                                        children[i].firstChild.innerText = j;
+                                    }
+                                });
+                            };
                             td_delete.appendChild(bt_delete);
                             tr_start.appendChild(td_delete);
                         }
@@ -587,14 +653,17 @@ function loadCEtbody(tbody, from_index = 0) {
                             let bt_pattern = document.createElement("button");
                             bt_pattern.innerText = e_rule["pattern"];
                             bt_pattern.onclick = event => {
-                                let target = event.target;
-                                let input = prompt("update to:", target.innerText);
-                                if (input != null) {
-                                    target.innerText = input;
-                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
-                                    rules[index].end["pattern"] = input;
-                                    chrome.storage.local.set({ collapseExpandRules: rules });
-                                }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let input = prompt("update to:", target.innerText);
+                                    if (input != null) {
+                                        target.innerText = input;
+                                        let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                        rules[index].end["pattern"] = input;
+                                        chrome.storage.local.set({ collapseExpandRules: rules });
+                                    }
+                                });
                             };
                             td_pattern.appendChild(bt_pattern);
                             tr_end.appendChild(td_pattern);
@@ -619,19 +688,25 @@ function loadCEtbody(tbody, from_index = 0) {
                             }
 
                             input_color.onchange = event => {
-                                let target = event.target;
-                                select.value = target.value;
-                                let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
-                                rules[index].end["color"] = target.value;
-                                chrome.storage.local.set({ collapseExpandRules: rules });
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    select.value = target.value;
+                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                    rules[index].end["color"] = target.value;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                });
                             };
 
                             select.onchange = event => {
-                                let target = event.target;
-                                input_color.value = target.value;
-                                let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
-                                rules[index].end["color"] = target.value;
-                                chrome.storage.local.set({ collapseExpandRules: rules });
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    input_color.value = target.value;
+                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                    rules[index].end["color"] = target.value;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                });
                             };
                         }
                         { // hint
@@ -639,14 +714,17 @@ function loadCEtbody(tbody, from_index = 0) {
                             let bt_hint = document.createElement("button");
                             bt_hint.innerText = e_rule["hint"];
                             bt_hint.onclick = event => {
-                                let target = event.target;
-                                let input = prompt("update to:", target.innerText);
-                                if (input != null) {
-                                    target.innerText = input;
-                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
-                                    rules[index].end["hint"] = input;
-                                    chrome.storage.local.set({ collapseExpandRules: rules });
-                                }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let input = prompt("update to:", target.innerText);
+                                    if (input != null) {
+                                        target.innerText = input;
+                                        let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                        rules[index].end["hint"] = input;
+                                        chrome.storage.local.set({ collapseExpandRules: rules });
+                                    }
+                                });
                             };
                             td_hint.appendChild(bt_hint);
                             tr_end.appendChild(td_hint);
@@ -656,14 +734,17 @@ function loadCEtbody(tbody, from_index = 0) {
                             let bt_link = document.createElement("button");
                             bt_link.innerText = e_rule["link"];
                             bt_link.onclick = event => {
-                                let target = event.target;
-                                let input = prompt("update to:", target.innerText);
-                                if (input != null) {
-                                    target.innerText = input;
-                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
-                                    rules[index].end["link"] = input;
-                                    chrome.storage.local.set({ collapseExpandRules: rules });
-                                }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let input = prompt("update to:", target.innerText);
+                                    if (input != null) {
+                                        target.innerText = input;
+                                        let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                        rules[index].end["link"] = input;
+                                        chrome.storage.local.set({ collapseExpandRules: rules });
+                                    }
+                                });
                             };
                             td_link.appendChild(bt_link);
                             tr_end.appendChild(td_link);
@@ -674,11 +755,14 @@ function loadCEtbody(tbody, from_index = 0) {
                             input_RegExp.type = "checkbox";
                             input_RegExp.checked = e_rule.isRegExp;
                             input_RegExp.onchange = event => {
-                                let target = event.target;
-                                let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
-                                rules[index].end["isRegExp"] = target.checked;
-                                chrome.storage.local.set({ collapseExpandRules: rules });
-                            }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                    rules[index].end["isRegExp"] = target.checked;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                });
+                            };
                             td_RegExp.appendChild(input_RegExp);
                             tr_end.appendChild(td_RegExp);
                         }
@@ -688,11 +772,14 @@ function loadCEtbody(tbody, from_index = 0) {
                             input_Censitive.type = "checkbox";
                             input_Censitive.checked = e_rule.isCensitive;
                             input_Censitive.onchange = event => {
-                                let target = event.target;
-                                let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
-                                rules[index].end["isCensitive"] = target.checked;
-                                chrome.storage.local.set({ collapseExpandRules: rules });
-                            }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                    rules[index].end["isCensitive"] = target.checked;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                });
+                            };
                             td_Censitive.appendChild(input_Censitive);
                             tr_end.appendChild(td_Censitive);
                         }
@@ -702,11 +789,14 @@ function loadCEtbody(tbody, from_index = 0) {
                             input_Multiline.type = "checkbox";
                             input_Multiline.checked = e_rule.isMultiline;
                             input_Multiline.onchange = event => {
-                                let target = event.target;
-                                let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
-                                rules[index].end["isMultiline"] = target.checked;
-                                chrome.storage.local.set({ collapseExpandRules: rules });
-                            }
+                                chrome.storage.local.get({ collapseExpandRules: [] }, result => {
+                                    let rules = result.collapseExpandRules;
+                                    let target = event.target;
+                                    let index = Number(target.parentNode.parentNode.previousSibling.firstChild.innerText);
+                                    rules[index].end["isMultiline"] = target.checked;
+                                    chrome.storage.local.set({ collapseExpandRules: rules });
+                                });
+                            };
                             td_Multiline.appendChild(input_Multiline);
                             tr_end.appendChild(td_Multiline);
                         }
