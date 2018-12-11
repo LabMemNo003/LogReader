@@ -20,8 +20,6 @@ class HLData extends SPData {
         super();
         this.rule = rule;
         this.result = result;
-        this.index = 0;
-        this.nodes = document.getElementsByClassName(result.className);
     }
     isZeroCount() {
         return this.result.count == 0;
@@ -38,9 +36,10 @@ class HLData extends SPData {
         return [str1, str2].join(", ");
     }
     getElement() {
-        let index = this.index;
-        let nodes = this.nodes;
+        let index = 0;
+        let nodes = document.getElementsByClassName(this.result.className);
         let count = this.result.count;
+        let lastFocus;
 
         let containerElem = document.createElement("span");
         containerElem.classList.add(LABEL.classSP);
@@ -57,8 +56,8 @@ class HLData extends SPData {
         let minusElem = document.createElement("button");
         minusElem.innerText = "-";
         minusElem.onclick = () => {
-            if (index) {
-                nodes[index - 1].style.fontWeight = "normal";
+            if (lastFocus) {
+                lastFocus.classList.remove(LABEL.classSPFocus);
             }
             index--;
             if (index < 1) {
@@ -72,8 +71,9 @@ class HLData extends SPData {
                 }
                 node = node.parentElement;
             }
-            nodes[index - 1].style.fontWeight = "bold";
+            nodes[index - 1].classList.add(LABEL.classSPFocus);
             nodes[index - 1].scrollIntoViewIfNeeded(true);
+            lastFocus = nodes[index - 1];
         };
         containerElem.appendChild(minusElem);
 
@@ -84,8 +84,8 @@ class HLData extends SPData {
         let plusElem = document.createElement("button");
         plusElem.innerText = "+";
         plusElem.onclick = () => {
-            if (index) {
-                nodes[index - 1].style.fontWeight = "normal";
+            if (lastFocus) {
+                lastFocus.classList.remove(LABEL.classSPFocus);
             }
             index++;
             if (index > count) {
@@ -99,8 +99,9 @@ class HLData extends SPData {
                 }
                 node = node.parentElement;
             }
-            nodes[index - 1].style.fontWeight = "bold";
+            nodes[index - 1].classList.add(LABEL.classSPFocus);
             nodes[index - 1].scrollIntoViewIfNeeded(true);
+            lastFocus = nodes[index - 1];
         }
         containerElem.appendChild(plusElem);
 
@@ -132,6 +133,78 @@ class CEData extends SPData {
         let str2 = "end: " + summarizeReObjRule(this.rule.end, false);
         let str3 = "count: " + this.result.count;
         return [str1, str2, str3].join(", ");
+    }
+    getElement() {
+        let index = 0;
+        let nodes = document.getElementsByClassName(this.result.startClassName);
+        let count = this.result.count;
+        let lastFocus;
+
+        let containerElem = document.createElement("span");
+        containerElem.classList.add(LABEL.classSP);
+        containerElem.classList.add(LABEL.classWhiteList);
+
+        let bannerElem = document.createElement("a");
+        bannerElem.style.backgroundColor = this.rule.start.color;
+        bannerElem.innerText = this.getSummary();
+        if (this.rule.start.link && this.rule.start.link.length) {
+            bannerElem.href = this.rule.start.link;
+        }
+        containerElem.appendChild(bannerElem);
+
+        let minusElem = document.createElement("button");
+        minusElem.innerText = "-";
+        minusElem.onclick = () => {
+            if (lastFocus) {
+                lastFocus.classList.remove(LABEL.classSPFocus);
+            }
+            index--;
+            if (index < 1) {
+                index = count;
+            }
+            indexElem.innerText = index;
+            let node = nodes[index - 1];
+            while (node.parentElement) {
+                if (node.classList.contains(LABEL.classCE)) {
+                    node.style.display = "inline";
+                }
+                node = node.parentElement;
+            }
+            nodes[index - 1].classList.add(LABEL.classSPFocus);
+            nodes[index - 1].scrollIntoViewIfNeeded(true);
+            lastFocus = nodes[index - 1];
+        };
+        containerElem.appendChild(minusElem);
+
+        let indexElem = document.createElement("span");
+        indexElem.innerText = index;
+        containerElem.appendChild(indexElem);
+
+        let plusElem = document.createElement("button");
+        plusElem.innerText = "+";
+        plusElem.onclick = () => {
+            if (lastFocus) {
+                lastFocus.classList.remove(LABEL.classSPFocus);
+            }
+            index++;
+            if (index > count) {
+                index = 1;
+            }
+            indexElem.innerText = index;
+            let node = nodes[index - 1];
+            while (node.parentElement) {
+                if (node.classList.contains(LABEL.classCE)) {
+                    node.style.display = "inline";
+                }
+                node = node.parentElement;
+            }
+            nodes[index - 1].classList.add(LABEL.classSPFocus);
+            nodes[index - 1].scrollIntoViewIfNeeded(true);
+            lastFocus = nodes[index - 1];
+        }
+        containerElem.appendChild(plusElem);
+
+        return containerElem;
     }
 }
 
