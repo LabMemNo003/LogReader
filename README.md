@@ -1,18 +1,22 @@
 ## Install on Chrome with developer mode
-1. Navigate to `chrome://extensions` in your browser.
-2. Check the box next to **Developer Mode**.
-3. Click **Load Unpacked Extension** and select **Log Reader**'s directory.
-4. [More info](https://developer.chrome.com/extensions)
+1. Download latest version from [**here**](https://github.com/LabMemNo003/LogReader/releases) and unzip it.
+2. Navigate to `chrome://extensions` in your browser.
+3. Check the box next to **Developer Mode**.
+4. Click **Load Unpacked Extension** and select **Log Reader**'s directory.
 
 ## Install on Firefox with debugging mode
-1. Type `about:debugging` in the Firefox URL bar.
-2. Click **Load Temporary Add-on** and select any file in your **Log Reader**'s directory.  
+1. Download latest version from [**here**](https://github.com/LabMemNo003/LogReader/releases) and unzip it.
+2. Type `about:debugging` in the Firefox URL bar.
+3. Click **Load Temporary Add-on** and select any file in **Log Reader**'s directory.  
    The extension will now be installed, and will stay until you restart Firefox.
-3. [More info](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Your_first_WebExtension)
 
 ## Settings
 1. [Color Value](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value)
 2. [Regular Expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)
+
+## More info
+1. [Chrome extensions guide](https://developer.chrome.com/extensions)
+2. [Firefox extensions guide](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Your_first_WebExtension)
 
 ---
 
@@ -28,12 +32,12 @@
 - [x] H: Implement setting or resetting default rules in extension - 2018/12/08~2018/12/09
 - [x] H: Dynamically update web page instead of reloading it - 2018/12/05~2018/12/11
 - [x] H: Allow to change precedence of rules - 2018/12/05~2018/12/11
-- [x] H: Use `<input type="color">` to choose color - 2018/12/05
+- [x] H: Use `<input type="color">` to choose color - 2018/12/05~2018/12/12
+- [x] M: Add more default rules in extension - 2018/12/09~2018/12/12
 - [ ] H: Documentation about rules - 2018/12/09
 - [ ] M: Add URL filters to select rules to be executed - 2018/12/06
 - [ ] M: Improve the performance about statistic panel - 2018/12/07
-- [ ] M: When stroke Ctrl+F, switch to exactly same place in the log 2018/12/09
-- [ ] M: Add more default rules in extension - 2018/12/09
+- [ ] M: When stroke Ctrl+Shift+F, switch to exactly same place in the log 2018/12/09
 - [ ] M: Implement Element.scrollIntoViewIfNeeded() for firefox - 2018/12/09
 - [ ] L: Performance improvement on collapseExpand() (Break loop) - 2018/12/05
 - [ ] L: Add link to collapse/expand's start/end element - 2018/12/05
