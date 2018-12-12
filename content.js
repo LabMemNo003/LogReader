@@ -11,77 +11,63 @@ const LABEL = {
     classSPFocus: "lr_spf", //log reader statistic panel focus
 }
 
-let de = false;
-let bug_performance = (() => {
-    let last;
-    return message => {
-        if (last) {
-            let now = new Date();
-            let interval = now - last;
-            last = now;
-            console.log(message, interval);
-        }
-        else {
-            last = new Date();
-            console.log(message, last);
-        }
-    }
-})();
-
 let isAtOriginalPage = true;
-let originalBodyElementHasSaved = false;
+let originalBodyElementCopyHasSaved = false;
 let originalBodyElementCopy;
+let originalBodyElementHasSaved = false;
+let originalBodyElement;
 let processedBodyElementHasSaved = false;
-let processedBodyElementCopy;
-function initialize() {
-    if (originalBodyElementHasSaved == false) {
-        originalBodyElementCopy = document.body.cloneNode(true);
-        originalBodyElementHasSaved = true;
-    }
-    else {
-        // debugger;
-        document.body.replaceWith(originalBodyElementCopy);
-    }
-    document.normalize();
-
-    SP_initialize();
-}
+let processedBodyElement;
 
 // Trigger all trigger...functions
 async function triggerAll() {
+    if (originalBodyElementCopyHasSaved == false) {
+        document.normalize();
+        originalBodyElementCopy = document.body.cloneNode(true);
+        originalBodyElementCopyHasSaved = true;
+    }
 
-    // de && bug_performance("triggerAll():");
-    initialize();
-    // de && bug_performance("initialize():");
-    return triggerCollapseExpand()
-        .then(_ => {
-            // de && bug_performance("triggerCollapseExpand():");
-            return triggerHighlightText();
-        })
-        .then(_ => {
-            // de && bug_performance("triggerHighlightText():");
-            return tirggerStatisticPanel();
-        })
-        .then(_ => {
-            // de && bug_performance("tirggerStatisticPanel():");
-            processedBodyElementCopy = document.body;
-            processedBodyElementHasSaved = true;
-            isAtOriginalPage = false;
-        });
+    if (isAtOriginalPage == false) {
+        if (originalBodyElementHasSaved == true) {
+            document.body.replaceWith(originalBodyElement);
+        }
+        else {
+            document.body.replaceWith(originalBodyElementCopy.cloneNode(true));
+        }
+    }
+
+    SP_initialize();
+    return triggerCE().then(_ => {
+        return triggerHL();
+    }).then(_ => {
+        return tirggerStatisticPanel();
+    }).then(_ => {
+        isAtOriginalPage = false;
+        originalBodyElementHasSaved = false;
+        processedBodyElement = document.body;
+        processedBodyElementHasSaved = true;
+    });
 }
 
 function switchPage() {
     if (isAtOriginalPage == true) {
         if (processedBodyElementHasSaved == true) {
-            document.body.replaceWith(processedBodyElementCopy);
-            isAtOriginalPage = false;
+            document.body.replaceWith(processedBodyElement);
         }
         else {
             triggerAll();
         }
+        isAtOriginalPage = false;
     }
     else {
-        document.body.replaceWith(originalBodyElementCopy);
+        if (originalBodyElementHasSaved == true) {
+            document.body.replaceWith(originalBodyElement);
+        }
+        else {
+            document.body.replaceWith(originalBodyElementCopy.cloneNode(true));
+            originalBodyElement = document.body;
+            originalBodyElementHasSaved = true;
+        }
         isAtOriginalPage = true;
     }
 }
