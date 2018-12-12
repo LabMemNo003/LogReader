@@ -230,3 +230,19 @@ async function triggerHighlightText() {
         );
     });
 }
+
+async function triggerHL() {
+    return new Promise((resolve, _) => {
+        chrome.storage.local.get(
+            { hl_enable: true },
+            result => {
+                if (result.hl_enable) {
+                    triggerHighlightText().then(_ => resolve(0));
+                }
+                else {
+                    resolve(0);
+                }
+            }
+        );
+    });
+}
