@@ -8,6 +8,7 @@ const LABEL = {
     classDummy: "lr_dm", // log reader dummy
     classEnter: "lr_et", // log reader enter
     classSP: "lr_sp", //log reader statistic panel
+    classSPFocus: "lr_spf", //log reader statistic panel focus
 }
 
 let de = false;

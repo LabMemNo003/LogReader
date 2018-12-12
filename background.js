@@ -9,14 +9,17 @@ chrome.runtime.onInstalled.addListener(details => {
         chrome.storage.local.set({ defaultRules });
         chrome.storage.local.set(defaultRules);
     }
+    else if (details.reason == "update") {
+        chrome.storage.local.set({ defaultRules });
+    }
 });
 
 let defaultRules = {
     formatVersion: "1.0",
     highlightRules: [
         {
-            pattern: "warn",
-            color: "yellow",
+            pattern: "panic",
+            color: "red",
             hint: "default rule",
             link: "",
             isRegExp: true,
@@ -33,8 +36,26 @@ let defaultRules = {
             isMultiline: false,
         },
         {
-            pattern: "panic",
+            pattern: "error",
             color: "red",
+            hint: "default rule",
+            link: "",
+            isRegExp: true,
+            isCensitive: false,
+            isMultiline: false,
+        },
+        {
+            pattern: "fault",
+            color: "red",
+            hint: "default rule",
+            link: "",
+            isRegExp: true,
+            isCensitive: false,
+            isMultiline: false,
+        },
+        {
+            pattern: "warn",
+            color: "yellow",
             hint: "default rule",
             link: "",
             isRegExp: true,
