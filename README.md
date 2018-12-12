@@ -1,14 +1,22 @@
-## Install on Chrome with developer mode
-1. Download latest version from [**here**](https://github.com/LabMemNo003/LogReader/releases) and unzip it.
-2. Navigate to `chrome://extensions` in your browser.
-3. Check the box next to **Developer Mode**.
-4. Click **Load Unpacked Extension** and select **Log Reader**'s directory.
+# Log Reader
 
-## Install on Firefox with debugging mode
-1. Download latest version from [**here**](https://github.com/LabMemNo003/LogReader/releases) and unzip it.
-2. Type `about:debugging` in the Firefox URL bar.
-3. Click **Load Temporary Add-on** and select any file in **Log Reader**'s directory.  
-   The extension will now be installed, and will stay until you restart Firefox.
+## Install on Chrome
+Search "LogReader" in [chrome web store](https://chrome.google.com/webstore/category/extensions), or:
+
+> ### Install latest version on Chrome with developer mode
+> 1. Download package from [**here**](https://github.com/LabMemNo003/LogReader/releases) and unzip it.
+> 2. Navigate to `chrome://extensions` in your browser.
+> 3. Check the box next to **Developer Mode**.
+> 4. Click **Load Unpacked Extension** and select **Log Reader**'s directory.
+
+## Install on Firefox
+Search "Log Reader" in [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/), or:
+
+> ### Install latest version on Firefox with debugging mode
+> 1. Download package from [**here**](https://github.com/LabMemNo003/LogReader/releases) and unzip it.
+> 2. Type `about:debugging` in the Firefox URL bar.
+> 3. Click **Load Temporary Add-on** and select any file in **Log Reader**'s directory.  
+>    The extension will now be installed, and will stay until you restart Firefox.
 
 ## Settings
 1. [Color Value](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value)
