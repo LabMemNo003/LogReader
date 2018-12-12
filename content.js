@@ -11,23 +11,6 @@ const LABEL = {
     classSPFocus: "lr_spf", //log reader statistic panel focus
 }
 
-let de = false;
-let bug_performance = (() => {
-    let last;
-    return message => {
-        if (last) {
-            let now = new Date();
-            let interval = now - last;
-            last = now;
-            console.log(message, interval);
-        }
-        else {
-            last = new Date();
-            console.log(message, last);
-        }
-    }
-})();
-
 let isAtOriginalPage = true;
 let originalBodyElementCopyHasSaved = false;
 let originalBodyElementCopy;
@@ -55,10 +38,8 @@ async function triggerAll() {
 
     SP_initialize();
     return triggerCE().then(_ => {
-        // de && bug_performance("triggerCollapseExpand():");
         return triggerHL();
     }).then(_ => {
-        // de && bug_performance("triggerHighlightText():");
         return tirggerStatisticPanel();
     }).then(_ => {
         isAtOriginalPage = false;
@@ -67,8 +48,6 @@ async function triggerAll() {
         processedBodyElementHasSaved = true;
     });
 }
-
-
 
 function switchPage() {
     if (isAtOriginalPage == true) {
