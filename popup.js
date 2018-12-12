@@ -365,8 +365,17 @@ ce_buttonClean.onclick = () => {
 // ----------------------------------------------------------------------------
 // Trigger all
 // ----------------------------------------------------------------------------
-let all_buttonTrigger = document.getElementById("all_trigger");
+let bt_triggerAll = document.getElementById("trigger_all");
 
-all_buttonTrigger.onclick = () => {
+bt_triggerAll.onclick = () => {
     chrome.tabs.executeScript({ code: "triggerAll();" });
+}
+
+// ----------------------------------------------------------------------------
+// Switch page
+// ----------------------------------------------------------------------------
+let bt_switchPage = document.getElementById("switch_page");
+
+bt_switchPage.onclick = () => {
+    chrome.tabs.executeScript({ code: "switchPage();" });
 }
