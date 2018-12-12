@@ -63,5 +63,26 @@ let defaultRules = {
             isMultiline: false,
         },
     ],
-    collapseExpandRules: [],
+    collapseExpandRules: [
+        {
+            start: {
+                pattern: "^.*Fetching task: (\\d+).*$",
+                color: "yellow",
+                hint: "default rule",
+                link: "",
+                isRegExp: true,
+                isCensitive: false,
+                isMultiline: true,
+            },
+            end: {
+                pattern: "Completed Task : [:1:]",
+                color: "brown",
+                hint: "default rule",
+                link: "",
+                isRegExp: true,
+                isCensitive: false,
+                isMultiline: false,
+            },
+        },
+    ],
 };

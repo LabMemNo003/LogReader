@@ -365,34 +365,8 @@ ce_buttonClean.onclick = () => {
 // ----------------------------------------------------------------------------
 // Trigger all
 // ----------------------------------------------------------------------------
-let bt_triggerAll = document.getElementById("trigger_all");
+let all_buttonTrigger = document.getElementById("all_trigger");
 
-bt_triggerAll.onclick = () => {
+all_buttonTrigger.onclick = () => {
     chrome.tabs.executeScript({ code: "triggerAll();" });
-}
-
-let cb_hlEnable = document.getElementById("hl_enable");
-let cb_ceEnable = document.getElementById("ce_enable");
-
-chrome.storage.local.get(
-    {
-        hl_enable: true,
-        ce_enable: true,
-    },
-    result => {
-        cb_hlEnable.checked = result.hl_enable;
-        cb_ceEnable.checked = result.ce_enable;
-    }
-);
-
-cb_hlEnable.onchange = () => { chrome.storage.local.set({ hl_enable: cb_hlEnable.checked }); };
-cb_ceEnable.onchange = () => { chrome.storage.local.set({ ce_enable: cb_ceEnable.checked }); };
-
-// ----------------------------------------------------------------------------
-// Switch page
-// ----------------------------------------------------------------------------
-let bt_switchPage = document.getElementById("switch_page");
-
-bt_switchPage.onclick = () => {
-    chrome.tabs.executeScript({ code: "switchPage();" });
 }

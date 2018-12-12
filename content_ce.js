@@ -291,19 +291,3 @@ async function triggerCollapseExpand() {
         return collapseExpandRestNodes();
     });
 }
-
-async function triggerCE() {
-    return new Promise((resolve, _) => {
-        chrome.storage.local.get(
-            { ce_enable: true },
-            result => {
-                if (result.ce_enable) {
-                    triggerCollapseExpand().then(_ => resolve(0));
-                }
-                else {
-                    resolve(0);
-                }
-            }
-        );
-    });
-}
