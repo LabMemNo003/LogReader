@@ -1,4 +1,6 @@
 # Log Reader
+Make plain text more readable in browser.  
+For more detail please refer to https://github.com/LabMemNo003/LogReader/wiki .
 
 ## Install on Chrome
 Search "LogReader" in [chrome web store](https://chrome.google.com/webstore/category/extensions), or:
@@ -17,14 +19,6 @@ Search "Log Reader" in [Firefox Add-ons](https://addons.mozilla.org/en-US/firefo
 > 2. Type `about:debugging` in the Firefox URL bar.
 > 3. Click **Load Temporary Add-on** and select any file in **Log Reader**'s directory.  
 >    The extension will now be installed, and will stay until you restart Firefox.
-
-## Settings
-1. [Color Value](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value)
-2. [Regular Expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)
-
-## More info
-1. [Chrome extensions guide](https://developer.chrome.com/extensions)
-2. [Firefox extensions guide](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Your_first_WebExtension)
 
 ---
 
