@@ -1,5 +1,5 @@
 chrome.commands.onCommand.addListener(command => {
-    if (command == "trigger") {
+    if (command == "switch") {
         chrome.tabs.executeScript({ code: 'switchPage();' });
     }
 });
